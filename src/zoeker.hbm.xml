@@ -36,7 +36,8 @@
 			</generator>
 		</id>
         <property name="naam"/>
-		<property name="label"/>
+		<property name="label"/>                
+        <property name="volgorde"/>
 		<property name="attribuutnaam"/>
         <property name="type"/>
 		<many-to-one class="nl.b3p.zoeker.configuratie.ZoekConfiguratie" name="zoekConfiguratie" column="zoekconfiguratie" lazy="false"/>
@@ -50,11 +51,11 @@
 		</id>
 		<property name="naam"/>
 		<property column="featuretype" name="featureType"/>
-		<set name="zoekVelden" lazy="false" cascade="all-delete-orphan" order-by="id">
+		<set name="zoekVelden" lazy="false" cascade="all-delete-orphan" order-by="volgorde">
 			<key column="zoekconfiguratie"/>
 			<one-to-many class="nl.b3p.zoeker.configuratie.ZoekAttribuut"/>
 		</set>
-        <set name="resultaatVelden" lazy="false" cascade="all-delete-orphan" order-by="id">
+        <set name="resultaatVelden" lazy="false" cascade="all-delete-orphan" order-by="volgorde">
 			<key column="zoekconfiguratie"/>
 			<one-to-many class="nl.b3p.zoeker.configuratie.ResultaatAttribuut"/>
 		</set>

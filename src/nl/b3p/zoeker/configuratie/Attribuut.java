@@ -19,6 +19,7 @@ public class Attribuut {
     private String attribuutnaam=null;
     private String label=null;
     private Integer type=GEEN_TYPE;
+    private Integer volgorde;
     private ZoekConfiguratie zoekConfiguratie;
 
     public Attribuut(){}
@@ -98,6 +99,19 @@ public class Attribuut {
      */
     public void setType(Integer type) {
         this.type = type;
+    }
+     /**
+     * @return the volgorde
+     */
+    public Integer getVolgorde() {
+        return volgorde;
+    }
+
+    /**
+     * @param volgorde the volgorde to set
+     */
+    public void setVolgorde(Integer volgorde) {
+        this.volgorde = volgorde;
     }
 /*
     public JSONObject toJSONObject() throws JSONException{
