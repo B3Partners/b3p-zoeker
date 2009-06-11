@@ -5,11 +5,10 @@ import java.util.Map;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-import javax.servlet.http.HttpServlet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class MyEMFDatabase extends HttpServlet {
+public class MyEMFDatabase{
 
     private static final Log log = LogFactory.getLog(MyEMFDatabase.class);
     public static final String MAIN_EM = "zoekerMainEM";
