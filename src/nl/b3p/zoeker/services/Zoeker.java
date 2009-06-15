@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
+import nl.b3p.geotools.filter.FilterFactoryImpl2;
 import nl.b3p.zoeker.configuratie.Bron;
 import nl.b3p.zoeker.configuratie.ResultaatAttribuut;
 import nl.b3p.zoeker.configuratie.ZoekAttribuut;
@@ -25,8 +26,6 @@ import org.geotools.data.DefaultQuery;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.postgis.PostgisDataStoreFactory;
 import org.geotools.data.wfs.WFSDataStoreFactory;
-import org.geotools.factory.CommonFactoryFinder;
-import org.geotools.factory.GeoTools;
 import org.geotools.feature.FeatureCollection;
 import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
@@ -77,7 +76,7 @@ public class Zoeker {
                 Iterator fi=null;
                 try{
                     FeatureSource fs= ds.getFeatureSource(zc.getFeatureType());
-                    FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(GeoTools.getDefaultHints());
+                    FilterFactory2 ff = new FilterFactoryImpl2(null);
                     if (zc.getZoekVelden()==null){
                         throw new Exception("Fout in zoekconfiguratie. Er zijn geen zoekvelden gedefineerd");
                     }
