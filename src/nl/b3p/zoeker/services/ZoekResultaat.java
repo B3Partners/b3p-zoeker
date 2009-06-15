@@ -5,11 +5,11 @@
 
 package nl.b3p.zoeker.services;
 
-import com.vividsolutions.jts.geom.Envelope;
 import java.util.ArrayList;
 import nl.b3p.zoeker.configuratie.Attribuut;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.opengis.geometry.BoundingBox;
 
 /**
  * @author Roy
@@ -117,11 +117,11 @@ public class ZoekResultaat {
     /**
      Set the bbox
      */
-    void setBbox(Envelope env) {
-        this.setMaxx(env.getMaxX());
-        this.setMaxy(env.getMaxY());
-        this.setMinx(env.getMinX());
-        this.setMiny(env.getMinY());
+    void setBbox(BoundingBox bounds) {
+        this.setMaxx(bounds.getMaxX());
+        this.setMaxy(bounds.getMaxY());
+        this.setMinx(bounds.getMinX());
+        this.setMiny(bounds.getMinY());
     }
 
     /**

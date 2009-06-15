@@ -27,8 +27,9 @@ import org.geotools.data.postgis.PostgisDataStoreFactory;
 import org.geotools.data.wfs.WFSDataStoreFactory;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.GeoTools;
-import org.geotools.feature.Feature;
 import org.geotools.feature.FeatureCollection;
+import org.opengis.feature.Feature;
+import org.opengis.feature.Property;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
 /**
@@ -109,27 +110,29 @@ public class Zoeker {
                         }
                         while (rit.hasNext()){
                             ResultaatAttribuut ra= (ResultaatAttribuut) rit.next();
-                            if (f.getAttribute(ra.getAttribuutLocalnaam())!=null){
-                                String value=f.getAttribute(ra.getAttribuutLocalnaam()).toString();
+                            if (f.getProperty(ra.getAttribuutLocalnaam())!=null){
+                                String value=f.getProperty(ra.getAttribuutLocalnaam()).getValue().toString();
                                 ZoekResultaatAttribuut zra= new ZoekResultaatAttribuut(ra);
                                 zra.setWaarde(value);
                                 p.addAttribuut(zra);
                                 p.setZoekConfigId(zc.getId());
                             }else{
                                 String attrTypes="";
-                                for (int i=0; i < f.getFeatureType().getAttributeTypes().length; i++){
-                                    attrTypes+=f.getFeatureType().getAttributeType(i).getLocalName()+" ";
+                                Iterator pi=f.getProperties().iterator();
+                                while(pi.hasNext()){
+                                    Property pr=(Property) pi.next();
+                                    attrTypes+=pr.getType().getName().getLocalPart()+" ";
                                 }
                                 log.debug("Attribuut: "+ra.toString()+ " niet gevonden. Mogelijke attributen: "+attrTypes);
                             }
                         }
-                        if (f.getDefaultGeometry()!=null && f.getDefaultGeometry().getEnvelopeInternal()!=null){
-                            p.setBbox(f.getDefaultGeometry().getEnvelopeInternal());
+                        if (f.getType().getGeometryDescriptor()!=null && f.getDefaultGeometryProperty()!=null && f.getDefaultGeometryProperty().getBounds()!=null){
+                            p.setBbox(f.getDefaultGeometryProperty().getBounds());
                         }
                         zoekResultaten.add(p);
                     }
                 }catch (Exception e){
-                    log.error("Fout bij laden plannen, mogelijk is de feature: ",e);
+                    log.error("Fout bij laden plannen, mogelijk is de feature niet aanwezig: ",e);
                 }
                 finally{
                     if (fc!=null && fi!=null)
@@ -185,7 +188,15 @@ public class Zoeker {
             if (b.getWachtwoord()!=null)
                 params.put(PostgisDataStoreFactory.PASSWD.key,b.getWachtwoord());
         }else{
-            params.put(WFSDataStoreFactory.URL.key,b.getUrl());
+            String url=b.getUrl();
+            if (b.getUrl().toLowerCase().indexOf("request=")==-1){
+                if (url.indexOf("?")>0)
+                    url+="&";
+                else
+                    url+="?";
+                url+="request=GetCapabilities&service=WFS";
+            }
+            params.put(WFSDataStoreFactory.URL.key,url);
             if (b.getGebruikersnaam()!=null)
                 params.put(WFSDataStoreFactory.USERNAME.key,b.getGebruikersnaam());
             if (b.getWachtwoord()!=null)
