@@ -12,7 +12,6 @@ import java.util.Iterator;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
-import nl.b3p.geotools.filter.FilterFactoryImpl2;
 import nl.b3p.zoeker.configuratie.Bron;
 import nl.b3p.zoeker.configuratie.ResultaatAttribuut;
 import nl.b3p.zoeker.configuratie.ZoekAttribuut;
@@ -26,6 +25,8 @@ import org.geotools.data.DefaultQuery;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.postgis.PostgisDataStoreFactory;
 import org.geotools.data.wfs.WFSDataStoreFactory;
+import org.geotools.factory.CommonFactoryFinder;
+import org.geotools.factory.GeoTools;
 import org.geotools.feature.FeatureCollection;
 import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
@@ -76,7 +77,7 @@ public class Zoeker {
                 Iterator fi=null;
                 try{
                     FeatureSource fs= ds.getFeatureSource(zc.getFeatureType());
-                    FilterFactory2 ff = new FilterFactoryImpl2(null);
+                    FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(GeoTools.getDefaultHints());
                     if (zc.getZoekVelden()==null){
                         throw new Exception("Fout in zoekconfiguratie. Er zijn geen zoekvelden gedefineerd");
                     }
@@ -96,7 +97,18 @@ public class Zoeker {
                         filter = ff.and(filters);
                     }
                     DefaultQuery query = new DefaultQuery(zc.getFeatureType(),filter);
+                    Iterator pit=zc.getResultaatVelden().iterator();
+                    //set de property namen die opgehaald moeten worden.
                     query.setMaxFeatures(maxResults.intValue());
+                    if (!pit.hasNext()){
+                        log.error("Geen resultaatvelden geconfigureerd voor zoekconfiguratie: "+zc.getNaam());
+                    }
+                    ArrayList properties= new ArrayList();
+                    while (pit.hasNext()){
+                        ResultaatAttribuut pa= (ResultaatAttribuut) pit.next();
+                        properties.add(pa.getAttribuutLocalnaam());
+                    }
+                    query.setPropertyNames(properties);
                     fc=fs.getFeatures(query);
                     //fc=fs.getFeatures(filter);
                     fi=fc.iterator();
@@ -200,7 +212,6 @@ public class Zoeker {
                 params.put(WFSDataStoreFactory.USERNAME.key,b.getGebruikersnaam());
             if (b.getWachtwoord()!=null)
                 params.put(WFSDataStoreFactory.PASSWORD.key,b.getWachtwoord());
-            
         }
         return DataStoreFinder.getDataStore(params);
     }   
