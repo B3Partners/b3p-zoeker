@@ -23,8 +23,10 @@ import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
 import org.geotools.data.DefaultQuery;
 import org.geotools.data.FeatureSource;
+import org.geotools.data.oracle.OracleDataStoreFactory;
 import org.geotools.data.postgis.PostgisDataStoreFactory;
 import org.geotools.data.wfs.WFSDataStoreFactory;
+import org.geotools.data.wfs.v1_0_0.WFS_1_0_0_DataStore;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.GeoTools;
 import org.geotools.feature.FeatureCollection;
@@ -89,7 +91,11 @@ public class Zoeker {
                     Filter filter=null;
                     for(int i=0; it.hasNext(); i++){
                         ZoekAttribuut zoekVeld= (ZoekAttribuut) it.next();
-                        filters.add(ff.like(ff.property(zoekVeld.getAttribuutLocalnaam()), "*"+searchStrings[i]+"*"));
+                        if (ds instanceof WFS_1_0_0_DataStore){
+                            //filters.add(ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchStrings[i])));
+                        }else{
+                            filters.add(ff.like(ff.property(zoekVeld.getAttribuutLocalnaam()), "*"+searchStrings[i]+"*"));
+                        }
                     }
                     if (filters.size()==1){
                         filter= (Filter) filters.get(0);
@@ -168,7 +174,33 @@ public class Zoeker {
      */
     //jdbc:postgresql://localhost:5432/edamvolendam_gis
     public DataStore getDataStore(Bron b) throws IOException{
+        if (b.getUrl()==null)
+            return null;
         HashMap params = new HashMap();
+        if(b.getUrl().toLowerCase().startsWith("jdbc:oracle:")){
+            //jdbc:oracle:thin:@b3p-demoserver:1521:ORCL
+            int firstIndex;
+            int lastIndex;
+            firstIndex=b.getUrl().indexOf("@")+1;
+            lastIndex=b.getUrl().indexOf(":",firstIndex);
+            String host=b.getUrl().substring(firstIndex, lastIndex);
+            firstIndex=lastIndex+1;
+            lastIndex=b.getUrl().indexOf(":",firstIndex);
+            String port=b.getUrl().substring(firstIndex, lastIndex);
+            firstIndex=lastIndex+1;
+            lastIndex=b.getUrl().indexOf(".",firstIndex);
+            String schema=null;
+            if (lastIndex==-1){
+                lastIndex=b.getUrl().length();
+            }else{
+                schema=b.getUrl().substring(lastIndex+1,b.getUrl().length());
+            }
+            String instance=b.getUrl().substring(firstIndex,lastIndex);
+            String user=b.getGebruikersnaam();
+            String passwd=b.getWachtwoord();
+            String dbtype="oracle";
+            return (DataStore)OracleDataStoreFactory.getDefaultDataSource(host, user, passwd, Integer.parseInt(port), instance, 100, 5, false);
+        }
         if (b.getUrl().toLowerCase().startsWith("jdbc:")){
             //jdbc:postgresql://localhost:5432/edamvolendam_gis
             int firstIndex;
