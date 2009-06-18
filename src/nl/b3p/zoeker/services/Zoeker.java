@@ -91,12 +91,17 @@ public class Zoeker {
                     Filter filter=null;
                     //omdat het and filter het niet doet kan je maar 1 filter meegegeven:
                     //for(int i=0; it.hasNext(); i++){
-                    for(int i=0; it.hasNext() && i < 1; i++){
+                    //de filterIndex geeft aan welk filter is meegezonden met het verzoek.
+                    int filterIndex=-1;
+                    for(int i=0; it.hasNext() && filterIndex== -1; i++){
                         ZoekAttribuut zoekVeld= (ZoekAttribuut) it.next();
                         if (ds instanceof WFS_1_0_0_DataStore){
                             //filters.add(ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchStrings[i])));
                         }else{
-                            filters.add(ff.like(ff.property(zoekVeld.getAttribuutLocalnaam()), "*"+searchStrings[i]+"*"));
+                            if (searchStrings[i].length()>0){
+                                filters.add(ff.like(ff.property(zoekVeld.getAttribuutLocalnaam()), "*"+searchStrings[i]+"*"));                                
+                                filterIndex=i;
+                            }
                         }
                     }
                     if (filters.size()==1){
@@ -104,12 +109,18 @@ public class Zoeker {
                     }else{
                         filter = ff.and(filters);
                     }
-                    DefaultQuery query = new DefaultQuery(zc.getFeatureType(),filter);
+                    DefaultQuery query;
+                    if (filters.size()==0){
+                        query = new DefaultQuery(zc.getFeatureType());
+                    }else{
+                        query = new DefaultQuery(zc.getFeatureType(),filter);
+                    }
                     Iterator pit=zc.getResultaatVelden().iterator();
                     //set de property namen die opgehaald moeten worden.
                     query.setMaxFeatures(maxResults.intValue());
                     if (!pit.hasNext()){
                         log.error("Geen resultaatvelden geconfigureerd voor zoekconfiguratie: "+zc.getNaam());
+                        return null;
                     }
                     ArrayList properties= new ArrayList();
                     while (pit.hasNext()){
@@ -119,36 +130,50 @@ public class Zoeker {
                     query.setPropertyNames(properties);
                     fc=fs.getFeatures(query);
                     //fc=fs.getFeatures(filter);
-                    fi=fc.iterator();
+                    fi=fc.iterator();                    
                     while(fi.hasNext()){
                         Feature f=(Feature) fi.next();
-                        ZoekResultaat p = new ZoekResultaat();
-                        Iterator rit=zc.getResultaatVelden().iterator();
-                        if (!rit.hasNext()){
-                            log.error("Geen resultaatvelden geconfigureerd voor zoekconfiguratie: "+zc.getNaam());
-                        }
-                        while (rit.hasNext()){
-                            ResultaatAttribuut ra= (ResultaatAttribuut) rit.next();
-                            if (f.getProperty(ra.getAttribuutLocalnaam())!=null){
-                                String value=f.getProperty(ra.getAttribuutLocalnaam()).getValue().toString();
-                                ZoekResultaatAttribuut zra= new ZoekResultaatAttribuut(ra);
-                                zra.setWaarde(value);
-                                p.addAttribuut(zra);
-                                p.setZoekConfigId(zc.getId());
+                        Iterator zit=zc.getZoekVelden().iterator();
+                        boolean tonen=true;
+                        for (int i=0; it.hasNext() && tonen; i++){                            
+                            if (i==filterIndex){//is al gechecked met het ophalen dus hoeft niet nog een keer gechecked te worden.
                             }else{
-                                String attrTypes="";
-                                Iterator pi=f.getProperties().iterator();
-                                while(pi.hasNext()){
-                                    Property pr=(Property) pi.next();
-                                    attrTypes+=pr.getType().getName().getLocalPart()+" ";
+                                ZoekAttribuut zak=(ZoekAttribuut) zit.next();
+                                if (f.getProperty(zak.getAttribuutLocalnaam())==null)
+                                    tonen=false;
+                                else if (f.getProperty(zak.getAttribuutLocalnaam()).getValue()==null){
+                                    tonen=false;
+                                }else if (!f.getProperty(zak.getAttribuutLocalnaam()).getValue().toString().matches(zak.getAttribuutLocalnaam())){
+                                    tonen=false;
                                 }
-                                log.debug("Attribuut: "+ra.toString()+ " niet gevonden. Mogelijke attributen: "+attrTypes);
                             }
                         }
-                        if (f.getType().getGeometryDescriptor()!=null && f.getDefaultGeometryProperty()!=null && f.getDefaultGeometryProperty().getBounds()!=null){
-                            p.setBbox(f.getDefaultGeometryProperty().getBounds());
+                        if(tonen){
+                            ZoekResultaat p = new ZoekResultaat();
+                            Iterator rit=zc.getResultaatVelden().iterator();                        
+                            while (rit.hasNext()){
+                                ResultaatAttribuut ra= (ResultaatAttribuut) rit.next();
+                                if (f.getProperty(ra.getAttribuutLocalnaam())!=null){
+                                    String value=f.getProperty(ra.getAttribuutLocalnaam()).getValue().toString();
+                                    ZoekResultaatAttribuut zra= new ZoekResultaatAttribuut(ra);
+                                    zra.setWaarde(value);
+                                    p.addAttribuut(zra);
+                                    p.setZoekConfigId(zc.getId());
+                                }else{
+                                    String attrTypes="";
+                                    Iterator pi=f.getProperties().iterator();
+                                    while(pi.hasNext()){
+                                        Property pr=(Property) pi.next();
+                                        attrTypes+=pr.getType().getName().getLocalPart()+" ";
+                                    }
+                                    log.debug("Attribuut: "+ra.toString()+ " niet gevonden. Mogelijke attributen: "+attrTypes);
+                                }
+                            }
+                            if (f.getType().getGeometryDescriptor()!=null && f.getDefaultGeometryProperty()!=null && f.getDefaultGeometryProperty().getBounds()!=null){
+                                p.setBbox(f.getDefaultGeometryProperty().getBounds());
+                            }
+                            zoekResultaten.add(p);
                         }
-                        zoekResultaten.add(p);
                     }
                 }catch (Exception e){
                     log.error("Fout bij laden plannen, mogelijk is de feature niet aanwezig: ",e);
