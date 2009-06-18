@@ -89,7 +89,9 @@ public class Zoeker {
                     Iterator it=zc.getZoekVelden().iterator();
                     List filters= new ArrayList();
                     Filter filter=null;
-                    for(int i=0; it.hasNext(); i++){
+                    //omdat het and filter het niet doet kan je maar 1 filter meegegeven:
+                    //for(int i=0; it.hasNext(); i++){
+                    for(int i=0; it.hasNext() && i < 1; i++){
                         ZoekAttribuut zoekVeld= (ZoekAttribuut) it.next();
                         if (ds instanceof WFS_1_0_0_DataStore){
                             //filters.add(ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchStrings[i])));
