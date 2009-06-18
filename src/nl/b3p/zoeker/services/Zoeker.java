@@ -137,13 +137,15 @@ public class Zoeker {
                         boolean tonen=true;
                         for (int i=0; it.hasNext() && tonen; i++){                            
                             if (i==filterIndex){//is al gechecked met het ophalen dus hoeft niet nog een keer gechecked te worden.
+                            }else if (searchStrings[i]==null || searchStrings[i].length()==0){
+                                //als searchstrings leeg is dan ook niet controleren.
                             }else{
                                 ZoekAttribuut zak=(ZoekAttribuut) zit.next();
                                 if (f.getProperty(zak.getAttribuutLocalnaam())==null)
                                     tonen=false;
                                 else if (f.getProperty(zak.getAttribuutLocalnaam()).getValue()==null){
                                     tonen=false;
-                                }else if (!f.getProperty(zak.getAttribuutLocalnaam()).getValue().toString().matches(zak.getAttribuutLocalnaam())){
+                                }else if (!f.getProperty(zak.getAttribuutLocalnaam()).getValue().toString().matches(searchStrings[i])){
                                     tonen=false;
                                 }
                             }
