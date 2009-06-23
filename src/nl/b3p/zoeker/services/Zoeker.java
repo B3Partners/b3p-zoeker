@@ -92,6 +92,7 @@ public class Zoeker {
                     //for(int i=0; it.hasNext(); i++){
                     //de filterIndex geeft aan welk filter is meegezonden met het verzoek.
                     int filterIndex=-1;
+                    ArrayList properties= new ArrayList();
                     for(int i=0; it.hasNext() && filterIndex== -1; i++){
                         ZoekAttribuut zoekVeld= (ZoekAttribuut) it.next();
                         if (ds instanceof WFS_1_0_0_DataStore){
@@ -102,6 +103,9 @@ public class Zoeker {
                                 filterIndex=i;
                             }
                         }
+                        //omdat het filter niet goed werkt moeten we met de hand controleren maar dan
+                        //moeten we wel de bevraagde attributen ophalen
+                        properties.add(zoekVeld.getAttribuutLocalnaam());
                     }
                     if (filters.size()==1){
                         filter= (Filter) filters.get(0);
@@ -114,19 +118,19 @@ public class Zoeker {
                     }else{
                         query = new DefaultQuery(zc.getFeatureType(),filter);
                     }
-                    Iterator pit=zc.getResultaatVelden().iterator();
-                    //set de property namen die opgehaald moeten worden.
                     query.setMaxFeatures(maxResults.intValue());
+                    //set de property namen die opgehaald moeten worden.
+                    Iterator pit=zc.getResultaatVelden().iterator(); 
                     if (!pit.hasNext()){
                         log.error("Geen resultaatvelden geconfigureerd voor zoekconfiguratie: "+zc.getNaam());
                         return null;
                     }
-                    ArrayList properties= new ArrayList();
                     while (pit.hasNext()){
                         ResultaatAttribuut pa= (ResultaatAttribuut) pit.next();
                         properties.add(pa.getAttribuutLocalnaam());
                     }
                     query.setPropertyNames(properties);
+
                     fc=fs.getFeatures(query);
                     //fc=fs.getFeatures(filter);
                     fi=fc.iterator();                    
