@@ -55,8 +55,7 @@ public class Zoeker {
             tx.begin();                
             for (int i=0; i < zoekConfiguratieIds.length; i++){
                 ZoekConfiguratie zc=  (ZoekConfiguratie) em.createQuery("from ZoekConfiguratie z where z.id = :id").setParameter("id", zoekConfiguratieIds[i]).getSingleResult();
-                List zcResult= zoekMetConfiguratie(zc,searchStrings, maxResults);
-                results.addAll(zcResult);
+                results= zoekMetConfiguratie(zc,searchStrings, maxResults,results);
             }
             
         } catch (Throwable e) {
@@ -68,9 +67,9 @@ public class Zoeker {
         return results;
     }
 
-    private List zoekMetConfiguratie(ZoekConfiguratie zc,String[] searchStrings, Integer maxResults){
+    private List zoekMetConfiguratie(ZoekConfiguratie zc,String[] searchStrings, Integer maxResults, List results){
         Bron bron = zc.getBron();
-        ArrayList zoekResultaten = new ArrayList();
+        ArrayList zoekResultaten = new ArrayList(results);
         DataStore ds=null;
         try{
             ds=getDataStore(bron);
@@ -174,7 +173,9 @@ public class Zoeker {
                             if (f.getType().getGeometryDescriptor()!=null && f.getDefaultGeometryProperty()!=null && f.getDefaultGeometryProperty().getBounds()!=null){
                                 p.setBbox(f.getDefaultGeometryProperty().getBounds());
                             }
-                            zoekResultaten.add(p);
+                            if (!zoekResultaten.contains(p)){
+                                zoekResultaten.add(p);
+                            }
                         }
                     }
                 }catch (Exception e){

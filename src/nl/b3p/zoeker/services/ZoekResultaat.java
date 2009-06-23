@@ -168,4 +168,15 @@ public class ZoekResultaat {
         }
         return returnValue;
     }
+
+    @Override
+    public boolean equals(Object o){
+        if (o instanceof ZoekResultaat){
+            ZoekResultaat z= (ZoekResultaat)o;
+            if (this.getId()!=null && z.getId()!=null){
+                return this.getId().equals(z.getId());
+            }
+        }
+        return false;
+    }
 }
