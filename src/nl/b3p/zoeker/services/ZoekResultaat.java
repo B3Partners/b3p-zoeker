@@ -14,7 +14,7 @@ import org.opengis.geometry.BoundingBox;
 /**
  * @author Roy
  */
-public class ZoekResultaat {
+public class ZoekResultaat implements Comparable{
     private static final Log log = LogFactory.getLog(ZoekResultaat.class);
     private ArrayList attributen=null;
     private Integer zoekConfigId=null;
@@ -178,5 +178,18 @@ public class ZoekResultaat {
             }
         }
         return false;
+    }
+
+    public int compareTo(Object o) {
+        if (!(o instanceof ZoekResultaat)){
+            return 1;
+        }else{
+           if (((ZoekResultaat)o).getLabel()==null){
+               return 1;
+           }if (this.getLabel()==null){
+               return -1;
+           }
+           return this.getLabel().compareTo(((ZoekResultaat)o).getLabel());
+        }
     }
 }

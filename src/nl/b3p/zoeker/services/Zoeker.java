@@ -7,6 +7,7 @@ package nl.b3p.zoeker.services;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -23,6 +24,7 @@ import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
 import org.geotools.data.DefaultQuery;
 import org.geotools.data.FeatureSource;
+import org.geotools.data.SchemaNotFoundException;
 import org.geotools.data.oracle.OracleDataStoreFactory;
 import org.geotools.data.postgis.PostgisDataStoreFactory;
 import org.geotools.data.wfs.WFSDataStoreFactory;
@@ -34,6 +36,7 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
+import org.opengis.filter.sort.SortBy;
 /**
  *
  * @author Roy
@@ -64,6 +67,7 @@ public class Zoeker {
             log.debug("Closing entity manager .....");
             MyEMFDatabase.closeEntityManager(identity, MyEMFDatabase.MAIN_EM);
         }
+        Collections.sort(results);
         return results;
     }
 
@@ -127,10 +131,10 @@ public class Zoeker {
                     }
                     while (pit.hasNext()){
                         ResultaatAttribuut pa= (ResultaatAttribuut) pit.next();
-                        properties.add(pa.getAttribuutLocalnaam());
+                        if (!properties.contains(pa.getAttribuutLocalnaam()))
+                              properties.add(pa.getAttribuutLocalnaam());
                     }
                     query.setPropertyNames(properties);
-
                     fc=fs.getFeatures(query);
                     //fc=fs.getFeatures(filter);
                     fi=fc.iterator();                    
@@ -159,7 +163,9 @@ public class Zoeker {
                             while (rit.hasNext()){
                                 ResultaatAttribuut ra= (ResultaatAttribuut) rit.next();
                                 if (f.getProperty(ra.getAttribuutLocalnaam())!=null){
-                                    String value=f.getProperty(ra.getAttribuutLocalnaam()).getValue().toString();
+                                    String value=null;
+                                    if (f.getProperty(ra.getAttribuutLocalnaam()).getValue()!=null)
+                                        value=f.getProperty(ra.getAttribuutLocalnaam()).getValue().toString();
                                     ZoekResultaatAttribuut zra= new ZoekResultaatAttribuut(ra);
                                     zra.setWaarde(value);
                                     p.addAttribuut(zra);
@@ -182,8 +188,18 @@ public class Zoeker {
                             }
                         }
                     }
+                }catch (SchemaNotFoundException snfe){
+                    String typenames="";
+                    String[] tn=ds.getTypeNames();
+                    for (int i=0; i < tn.length; i++){
+                        if (typenames.length()!=0){
+                            typenames+="\n";
+                        }
+                        typenames+=tn[i];
+                    }
+                    log.error("Feature niet bekend bij bron, mogelijke features: "+typenames,snfe);
                 }catch (Exception e){
-                    log.error("Fout bij laden plannen, mogelijk is de feature niet aanwezig: ",e);
+                    log.error("Fout bij laden plannen: ",e);
                 }
                 finally{
                     if (fc!=null && fi!=null)
@@ -230,10 +246,15 @@ public class Zoeker {
                 schema=b.getUrl().substring(lastIndex+1,b.getUrl().length());
             }
             String instance=b.getUrl().substring(firstIndex,lastIndex);
-            String user=b.getGebruikersnaam();
-            String passwd=b.getWachtwoord();
-            String dbtype="oracle";
-            return (DataStore)OracleDataStoreFactory.getDefaultDataSource(host, user, passwd, Integer.parseInt(port), instance, 100, 5, false);
+            params.put("host",host);
+            params.put("port",port);
+            if (schema!=null)
+                params.put("schema",schema);
+            params.put("instance",instance);
+            params.put("user",b.getGebruikersnaam());
+            params.put("passwd",b.getWachtwoord());
+            params.put("dbtype","oracle");
+            return (new OracleDataStoreFactory()).createDataStore(params);
         }
         if (b.getUrl().toLowerCase().startsWith("jdbc:")){
             //jdbc:postgresql://localhost:5432/edamvolendam_gis

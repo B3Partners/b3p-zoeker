@@ -6,7 +6,7 @@
 	<property name="output.schema" value="${hibernate-schemaexport.basedir}/schema-export.sql"/>
 	
 	<path id="hibernate.schemaexport.classpath">
-		<fileset dir="build/web/WEB-INF/lib">
+		<fileset dir="../gisviewer/build/web/WEB-INF/lib">
 			<include name="*.jar"/>
 		</fileset>		
 		<pathelement path="build/classes"/>
