@@ -164,8 +164,9 @@ public class Zoeker {
                                 ResultaatAttribuut ra= (ResultaatAttribuut) rit.next();
                                 if (f.getProperty(ra.getAttribuutLocalnaam())!=null){
                                     String value=null;
-                                    if (f.getProperty(ra.getAttribuutLocalnaam()).getValue()!=null)
+                                    if (f.getProperty(ra.getAttribuutLocalnaam()).getValue()!=null){
                                         value=f.getProperty(ra.getAttribuutLocalnaam()).getValue().toString();
+                                    }
                                     ZoekResultaatAttribuut zra= new ZoekResultaatAttribuut(ra);
                                     zra.setWaarde(value);
                                     p.addAttribuut(zra);
