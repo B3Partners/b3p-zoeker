@@ -103,7 +103,7 @@ public class Zoeker {
                             //filters.add(ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchStrings[i])));
                         }else{
                             if (searchStrings[i].length()>0){
-                                filters.add(ff.like(ff.property(zoekVeld.getAttribuutLocalnaam()), "*"+searchStrings[i]+"*"));                                
+                                filters.add(ff.like(ff.property(zoekVeld.getAttribuutLocalnaam()), searchStrings[i]));                                
                                 filterIndex=i;
                             }
                         }
@@ -166,6 +166,9 @@ public class Zoeker {
                                     String value=null;
                                     if (f.getProperty(ra.getAttribuutLocalnaam()).getValue()!=null){
                                         value=f.getProperty(ra.getAttribuutLocalnaam()).getValue().toString();
+                                    }else{
+                                        Object o= f.getProperty("typeplan");
+                                        log.info(o);
                                     }
                                     ZoekResultaatAttribuut zra= new ZoekResultaatAttribuut(ra);
                                     zra.setWaarde(value);
