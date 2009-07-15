@@ -1,0 +1,17 @@
+<!DOCTYPE dwr PUBLIC
+    "-//GetAhead Limited//DTD Direct Web Remoting 1.0//EN"
+    "http://www.getahead.ltd.uk/dwr/dwr10.dtd">
+<dwr>
+    <allow>
+        <create creator="new" javascript="JZoeker">
+            <param name="class" value="nl.b3p.zoeker.services.Zoeker"/>
+            <include method="zoek"/>
+        </create>
+        <convert converter="bean" match="nl.b3p.zoeker.services.ZoekResultaat"/>
+        <convert converter="bean" match="nl.b3p.zoeker.services.ZoekResultaatAttribuut"/>
+        <convert converter="bean" match="nl.b3p.zoeker.configuratie.ZoekConfiguratie"/>
+        <convert converter="bean" match="nl.b3p.zoeker.configuratie.Bron"/>
+        <convert converter="bean" match="nl.b3p.zoeker.configuratie.ResultaatAttribuut"/>
+        <convert converter="bean" match="nl.b3p.zoeker.configuratie.ZoekAttribuut"/>
+    </allow>
+</dwr>
