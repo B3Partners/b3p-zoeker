@@ -103,7 +103,7 @@ public class Zoeker {
                             //filters.add(ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchStrings[i])));
                         }else{
                             if (searchStrings[i].length()>0){
-                                filters.add(ff.like(ff.property(zoekVeld.getAttribuutLocalnaam()), searchStrings[i]));                                
+                                filters.add(ff.like(ff.property(zoekVeld.getAttribuutLocalnaam()), "*"+searchStrings[i]+"*"));                                
                                 filterIndex=i;
                             }
                         }
