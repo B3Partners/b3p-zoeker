@@ -150,7 +150,9 @@ public class ZoekResultaat implements Comparable{
         for (int i=0; i < waarden.size(); i++){
             if (resultValue.length()>0)
                     resultValue+=" ";
-            resultValue+=waarden.get(i);
+            if (waarden.get(i)!=null){
+                resultValue+=waarden.get(i);
+            }
         }       
         return resultValue;
     }
