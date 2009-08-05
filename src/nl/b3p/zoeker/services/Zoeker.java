@@ -36,7 +36,6 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
-import org.opengis.filter.sort.SortBy;
 /**
  *
  * @author Roy
@@ -55,10 +54,18 @@ public class Zoeker {
             identity = MyEMFDatabase.createEntityManager(MyEMFDatabase.MAIN_EM);
             EntityManager em = MyEMFDatabase.getEntityManager(MyEMFDatabase.MAIN_EM);
             EntityTransaction tx = em.getTransaction();
-            tx.begin();                
+            tx.begin();
+            try{
             for (int i=0; i < zoekConfiguratieIds.length; i++){
                 ZoekConfiguratie zc=  (ZoekConfiguratie) em.createQuery("from ZoekConfiguratie z where z.id = :id").setParameter("id", zoekConfiguratieIds[i]).getSingleResult();
                 results= zoekMetConfiguratie(zc,searchStrings, maxResults,results);
+                tx.commit();
+            }
+            }catch(Exception ex){
+                log.error("Exception occured" + (tx.isActive() ? ", rollback" : "tx not active"), ex);
+                if(tx.isActive()) {
+                    tx.rollback();
+                }
             }
             
         } catch (Throwable e) {
@@ -168,7 +175,6 @@ public class Zoeker {
                                         value=f.getProperty(ra.getAttribuutLocalnaam()).getValue().toString();
                                     }else{
                                         Object o= f.getProperty("typeplan");
-                                        log.info(o);
                                     }
                                     ZoekResultaatAttribuut zra= new ZoekResultaatAttribuut(ra);
                                     zra.setWaarde(value);
