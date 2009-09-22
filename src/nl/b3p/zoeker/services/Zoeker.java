@@ -22,7 +22,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
+import org.geotools.data.DefaultFeatureResults;
 import org.geotools.data.DefaultQuery;
+import org.geotools.data.FeatureReader;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.SchemaNotFoundException;
 import org.geotools.data.oracle.OracleDataStoreFactory;
@@ -43,7 +45,7 @@ import org.opengis.filter.FilterFactory2;
 public class Zoeker {
     private static final int topMaxResults=1000;
     private static final Log log = LogFactory.getLog(Zoeker.class);
-
+    private static final int TIMEOUT=20000;
     public List zoek(Integer[] zoekConfiguratieIds, String searchStrings[], Integer maxResults){
         if (maxResults==null || maxResults.intValue() == 0 || maxResults.intValue() > topMaxResults){
             maxResults=topMaxResults;
@@ -58,9 +60,9 @@ public class Zoeker {
             try{
             for (int i=0; i < zoekConfiguratieIds.length; i++){
                 ZoekConfiguratie zc=  (ZoekConfiguratie) em.createQuery("from ZoekConfiguratie z where z.id = :id").setParameter("id", zoekConfiguratieIds[i]).getSingleResult();
-                results= zoekMetConfiguratie(zc,searchStrings, maxResults,results);
-                tx.commit();
+                results= zoekMetConfiguratie(zc,searchStrings, maxResults,results);                
             }
+            tx.commit();
             }catch(Exception ex){
                 log.error("Exception occured" + (tx.isActive() ? ", rollback" : "tx not active"), ex);
                 if(tx.isActive()) {
@@ -77,7 +79,13 @@ public class Zoeker {
         Collections.sort(results);
         return results;
     }
-
+/**
+ * Zoek moet configuratie (search Strings moet gelijk zijn aan aantal zoekvelden in de ZoekConfiguratie:
+ * @param zc: ZoekConfiguratie waarmee gezocht moet worden
+ * @param searchStrings Een array van gezochte waarden. (moet gelijk zijn aan het aantal geconfigureerde zoekvelden en ook in die volgorde staan)
+ * @param maxResults: Het maximaal aantal resultaten dat getoond moeten worden.
+ * @param results: De al gevonden resultaten (de nieuwe resultaten worden hier aan toegevoegd.
+ */
     private List zoekMetConfiguratie(ZoekConfiguratie zc,String[] searchStrings, Integer maxResults, List results){
         Bron bron = zc.getBron();
         ArrayList zoekResultaten = new ArrayList(results);
@@ -86,7 +94,7 @@ public class Zoeker {
             ds=getDataStore(bron);
             if (ds!=null){
                 FeatureCollection fc=null;
-                Iterator fi=null;
+                FeatureReader reader=null;
                 try{
                     FeatureSource fs= ds.getFeatureSource(zc.getFeatureType());
                     FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(GeoTools.getDefaultHints());
@@ -107,7 +115,7 @@ public class Zoeker {
                     for(int i=0; it.hasNext() && filterIndex== -1; i++){
                         ZoekAttribuut zoekVeld= (ZoekAttribuut) it.next();
                         if (ds instanceof WFS_1_0_0_DataStore){
-                            //filters.add(ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchStrings[i])));
+                            filters.add(ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchStrings[i])));
                         }else{
                             if (searchStrings[i].length()>0){
                                 filters.add(ff.like(ff.property(zoekVeld.getAttribuutLocalnaam()), "*"+searchStrings[i]+"*"));                                
@@ -143,10 +151,13 @@ public class Zoeker {
                     }
                     query.setPropertyNames(properties);
                     fc=fs.getFeatures(query);
-                    //fc=fs.getFeatures(filter);
-                    fi=fc.iterator();                    
-                    while(fi.hasNext()){
-                        Feature f=(Feature) fi.next();
+                    //maak reader aan.
+                    DefaultFeatureResults fresults=(DefaultFeatureResults) fs.getFeatures(query);
+                    reader= fresults.reader();
+                    //reader.
+                    //fi=fc.iterator();
+                    while(reader.hasNext()){
+                        Feature f=reader.next();
                         Iterator zit=zc.getZoekVelden().iterator();
                         boolean tonen=true;
                         for (int i=0; zit.hasNext() && tonen; i++){
@@ -212,8 +223,9 @@ public class Zoeker {
                     log.error("Fout bij laden plannen: ",e);
                 }
                 finally{
-                    if (fc!=null && fi!=null)
-                        fc.close(fi);
+                    if (reader!=null){
+                        reader.close();
+                    }
                 }
             }else{
                 log.error("Kan geen datastore maken van bron");
@@ -309,6 +321,7 @@ public class Zoeker {
                 params.put(WFSDataStoreFactory.USERNAME.key,b.getGebruikersnaam());
             if (b.getWachtwoord()!=null)
                 params.put(WFSDataStoreFactory.PASSWORD.key,b.getWachtwoord());
+            params.put(WFSDataStoreFactory.TIMEOUT.key,TIMEOUT);
         }
         return DataStoreFinder.getDataStore(params);
     }   
