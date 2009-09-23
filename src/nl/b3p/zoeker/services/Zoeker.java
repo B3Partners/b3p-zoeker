@@ -149,12 +149,10 @@ public class Zoeker {
                         if (!properties.contains(pa.getAttribuutLocalnaam()))
                               properties.add(pa.getAttribuutLocalnaam());
                     }
-                    query.setPropertyNames(properties);
-                    fc=fs.getFeatures(query);
+                    query.setPropertyNames(properties);                    
                     //maak reader aan.
                     DefaultFeatureResults fresults=(DefaultFeatureResults) fs.getFeatures(query);
                     reader= fresults.reader();
-                    //reader.
                     //fi=fc.iterator();
                     while(reader.hasNext()){
                         Feature f=reader.next();
@@ -190,7 +188,7 @@ public class Zoeker {
                                     ZoekResultaatAttribuut zra= new ZoekResultaatAttribuut(ra);
                                     zra.setWaarde(value);
                                     p.addAttribuut(zra);
-                                    p.setZoekConfigId(zc.getId());
+                                    p.setZoekConfiguratie(zc);
                                 }else{
                                     String attrTypes="";
                                     Iterator pi=f.getProperties().iterator();

@@ -7,6 +7,7 @@ package nl.b3p.zoeker.services;
 
 import java.util.ArrayList;
 import nl.b3p.zoeker.configuratie.Attribuut;
+import nl.b3p.zoeker.configuratie.ZoekConfiguratie;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.opengis.geometry.BoundingBox;
@@ -18,6 +19,7 @@ public class ZoekResultaat implements Comparable{
     private static final Log log = LogFactory.getLog(ZoekResultaat.class);
     private ArrayList attributen=null;
     private Integer zoekConfigId=null;
+    private ZoekConfiguratie zoekConfiguratie=null;
     private double maxx;
     private double maxy;
     private double minx;
@@ -83,15 +85,13 @@ public class ZoekResultaat implements Comparable{
      * @return the zoekConfigId
      */
     public Integer getZoekConfigId() {
-        return zoekConfigId;
+        if (getZoekConfiguratie()!=null){
+            return getZoekConfiguratie().getId();
+        }
+        return null;
     }
 
-    /**
-     * @param zoekConfigId the zoekConfigId to set
-     */
-    public void setZoekConfigId(Integer zoekConfigId) {
-        this.zoekConfigId = zoekConfigId;
-    } 
+    
 
     /**
      * @return the attributen
@@ -193,5 +193,13 @@ public class ZoekResultaat implements Comparable{
            }
            return this.getLabel().compareTo(((ZoekResultaat)o).getLabel());
         }
+    }
+
+    public ZoekConfiguratie getZoekConfiguratie() {
+        return zoekConfiguratie;
+    }
+
+    public void setZoekConfiguratie(ZoekConfiguratie zoekConfiguratie) {
+        this.zoekConfiguratie = zoekConfiguratie;
     }
 }
