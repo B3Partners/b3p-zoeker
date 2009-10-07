@@ -28,12 +28,14 @@ import org.geotools.data.FeatureReader;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.SchemaNotFoundException;
 import org.geotools.data.oracle.OracleDataStoreFactory;
+import org.geotools.data.ows.WFSCapabilities;
 import org.geotools.data.postgis.PostgisDataStoreFactory;
 import org.geotools.data.wfs.WFSDataStoreFactory;
 import org.geotools.data.wfs.v1_0_0.WFS_1_0_0_DataStore;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.GeoTools;
 import org.geotools.feature.FeatureCollection;
+import org.geotools.filter.FilterCapabilities;
 import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
 import org.opengis.filter.Filter;
@@ -45,7 +47,7 @@ import org.opengis.filter.FilterFactory2;
 public class Zoeker {
     private static final int topMaxResults=1000;
     private static final Log log = LogFactory.getLog(Zoeker.class);
-    private static final int TIMEOUT=20000;
+    private static final int TIMEOUT=60000;
     public List zoek(Integer[] zoekConfiguratieIds, String searchStrings[], Integer maxResults){
         if (maxResults==null || maxResults.intValue() == 0 || maxResults.intValue() > topMaxResults){
             maxResults=topMaxResults;
@@ -96,6 +98,13 @@ public class Zoeker {
                 FeatureCollection fc=null;
                 FeatureReader reader=null;
                 try{
+                    if (ds instanceof WFS_1_0_0_DataStore) {
+                        WFS_1_0_0_DataStore wfs100ds = (WFS_1_0_0_DataStore) ds;
+                        WFSCapabilities wfscap = wfs100ds.getCapabilities();
+                        FilterCapabilities filterCap = wfscap.getFilterCapabilities();
+                        filterCap.addType(FilterCapabilities.FUNCTIONS);
+                        wfscap.setFilterCapabilities(filterCap);
+                    }
                     FeatureSource fs= ds.getFeatureSource(zc.getFeatureType());
                     FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(GeoTools.getDefaultHints());
                     if (zc.getZoekVelden()==null){
@@ -115,7 +124,7 @@ public class Zoeker {
                     for(int i=0; it.hasNext() && filterIndex== -1; i++){
                         ZoekAttribuut zoekVeld= (ZoekAttribuut) it.next();
                         if (ds instanceof WFS_1_0_0_DataStore){
-                            filters.add(ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchStrings[i])));
+                            filters.add(ff.equal(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchStrings[i]),false));
                         }else{
                             if (searchStrings[i].length()>0){
                                 filters.add(ff.like(ff.property(zoekVeld.getAttribuutLocalnaam()), "*"+searchStrings[i]+"*"));                                
