@@ -191,8 +191,6 @@ public class Zoeker {
                                     String value=null;
                                     if (f.getProperty(ra.getAttribuutLocalnaam()).getValue()!=null){
                                         value=f.getProperty(ra.getAttribuutLocalnaam()).getValue().toString();
-                                    }else{
-                                        Object o= f.getProperty("typeplan");
                                     }
                                     ZoekResultaatAttribuut zra= new ZoekResultaatAttribuut(ra);
                                     zra.setWaarde(value);
