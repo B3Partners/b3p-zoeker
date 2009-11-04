@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE hibernate-mapping SYSTEM "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>	
-    <class name="nl.b3p.zoeker.configuratie.Bron" table="plannenbank_bron">
+    <class name="nl.b3p.zoeker.configuratie.Bron" table="bron">
         <id name="id">
             <column name="id" not-null="true"/>
             <generator class="sequence">
@@ -14,7 +14,7 @@
         <property name="wachtwoord"/>
         <property name="volgorde"/>
     </class>
-    <class name="nl.b3p.zoeker.configuratie.ZoekAttribuut" table="plannenbank_zoekveld">
+    <class name="nl.b3p.zoeker.configuratie.ZoekAttribuut" table="zoekveld">
         <id name="id">
             <column name="id" not-null="true"/>
             <generator class="sequence">
@@ -28,7 +28,7 @@
         <property name="volgorde"/>
         <many-to-one class="nl.b3p.zoeker.configuratie.ZoekConfiguratie" name="zoekConfiguratie" column="zoekconfiguratie" lazy="false"/>
     </class>
-    <class name="nl.b3p.zoeker.configuratie.ResultaatAttribuut" table="plannenbank_resultaatveld">
+    <class name="nl.b3p.zoeker.configuratie.ResultaatAttribuut" table="resultaatveld">
         <id name="id">
             <column name="id" not-null="true"/>
             <generator class="sequence">
@@ -42,7 +42,7 @@
         <property name="type" column="typen"/>
         <many-to-one class="nl.b3p.zoeker.configuratie.ZoekConfiguratie" name="zoekConfiguratie" column="zoekconfiguratie" lazy="false"/>
     </class>
-    <class name="nl.b3p.zoeker.configuratie.ZoekConfiguratie" table="plannenbank_zoekconfiguratie">
+    <class name="nl.b3p.zoeker.configuratie.ZoekConfiguratie" table="zoekconfiguratie">
         <id name="id">
             <column name="id" not-null="true"/>
             <generator class="sequence">
