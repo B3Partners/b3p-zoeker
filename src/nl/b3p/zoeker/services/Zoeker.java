@@ -18,6 +18,7 @@ import nl.b3p.zoeker.configuratie.ResultaatAttribuut;
 import nl.b3p.zoeker.configuratie.ZoekAttribuut;
 import nl.b3p.zoeker.configuratie.ZoekConfiguratie;
 import nl.b3p.zoeker.hibernate.MyEMFDatabase;
+import oracle.jdbc.pool.OracleDataSourceFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geotools.data.DataStore;
@@ -299,8 +300,8 @@ public class Zoeker {
             if (database.indexOf(".")>=0){
                 String[] tokens=database.split("\\.");
                 if(tokens.length==2){
-                    schema=tokens[0];
-                    database=tokens[1];
+                    schema=tokens[1];
+                    database=tokens[0];
                 }
             }
             params.put(PostgisDataStoreFactory.DBTYPE.key,"postgis");
