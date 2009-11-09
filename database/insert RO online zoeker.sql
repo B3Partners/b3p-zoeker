@@ -11,7 +11,7 @@ INSERT INTO resultaatveld (label, attribuutnaam, type, zoekconfiguratie, naam, v
 
 INSERT INTO zoekveld (label, attribuutnaam, zoekconfiguratie, type, volgorde, naam) VALUES ('Plannen', 'app:overheidscode', 1, NULL, NULL, 'plannen');
 
-INSERT INTO bron (id, naam, url, volgorde, gebruikersnaam, wachtwoord) VALUES (2, 'local', 'jdbc:postgresql://localhost:5432/gisviewer_data', 2, 'gisviewer_data', 'gisviewer_data');
+INSERT INTO bron (id, naam, url, volgorde, gebruikersnaam, wachtwoord) VALUES (2, 'local', 'jdbc:postgresql://vulhierjehostin:5432/vulhierjedatabasein.ennadepunthetschema', 2, 'vulhierdeusernamein', 'vulhierhetwachtwoordin');
 INSERT INTO zoekconfiguratie (id, naam, featuretype, parentbron, parentzoekconfiguratie) VALUES (3, '', 'planeigenaar', 2, NULL);
 INSERT INTO resultaatveld (label, attribuutnaam, type, zoekconfiguratie, naam, volgorde) VALUES ('code', 'code', 1, 3, 'code', NULL);
 INSERT INTO resultaatveld (label, attribuutnaam, type, zoekconfiguratie, naam, volgorde) VALUES ('naam', 'naam', 2, 3, 'naam', NULL);
