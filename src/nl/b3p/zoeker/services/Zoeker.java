@@ -101,7 +101,7 @@ public class Zoeker {
      */
     private List zoekMetConfiguratie(ZoekConfiguratie zc, String[] searchStrings, Integer maxResults, List results) {
         if (zc == null || searchStrings == null) {
-            return null;
+            return results;
         }
         Bron bron = zc.getBron();
         ArrayList zoekResultaten = new ArrayList(results);
