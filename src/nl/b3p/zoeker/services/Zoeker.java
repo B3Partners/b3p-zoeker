@@ -104,12 +104,7 @@ public class Zoeker {
             return null;
         }
         Bron bron = zc.getBron();
-        ArrayList zoekResultaten = null;
-        if (results == null) {
-            results = new ArrayList();
-        } else {
-            results = new ArrayList(results);
-        }
+        ArrayList zoekResultaten = new ArrayList(results);
         DataStore ds = null;
         try {
             ds = getDataStore(bron);
