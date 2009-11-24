@@ -12,10 +12,10 @@ INSERT INTO resultaatveld (id,label, attribuutnaam, type, zoekconfiguratie, naam
 INSERT INTO zoekveld (id,label, attribuutnaam, zoekconfiguratie, type, volgorde, naam) VALUES (zoekveld_id_seq.NEXTVAL,'Plannen', 'app:overheidscode', 1, NULL, NULL, 'plannen');
 
 INSERT INTO bron (id, naam, url, volgorde, gebruikersnaam, wachtwoord) VALUES (2, 'local', 'jdbc:postgresql://vulhierjehostin:5432/vulhierjedatabasein.ennadepunthetschema', 2, 'vulhierdeusernamein', 'vulhierhetwachtwoordin');
-INSERT INTO zoekconfiguratie (id, naam, featuretype, parentbron, parentzoekconfiguratie) VALUES (3, '', 'planeigenaar', 2, NULL);
-INSERT INTO resultaatveld (id,label, attribuutnaam, type, zoekconfiguratie, naam, volgorde) VALUES (resultaatveld_id_seq.NEXTVAL,'code', 'code', 1, 3, 'code', NULL);
-INSERT INTO resultaatveld (id,label, attribuutnaam, type, zoekconfiguratie, naam, volgorde) VALUES (resultaatveld_id_seq.NEXTVAL,'naam', 'naam', 2, 3, 'naam', NULL);
-INSERT INTO zoekveld (id,label, attribuutnaam, zoekconfiguratie, type, volgorde, naam) VALUES (zoekveld_id_seq.NEXTVAL,'Eigenaar', 'naam', 3, NULL, NULL, 'eigenaar');
+INSERT INTO zoekconfiguratie (id, naam, featuretype, parentbron, parentzoekconfiguratie) VALUES (3, '', 'PLANEIGENAAR', 2, NULL);
+INSERT INTO resultaatveld (id,label, attribuutnaam, type, zoekconfiguratie, naam, volgorde) VALUES (resultaatveld_id_seq.NEXTVAL,'code', 'CODE', 1, 3, 'code', NULL);
+INSERT INTO resultaatveld (id,label, attribuutnaam, type, zoekconfiguratie, naam, volgorde) VALUES (resultaatveld_id_seq.NEXTVAL,'naam', 'NAAM', 2, 3, 'naam', NULL);
+INSERT INTO zoekveld (id,label, attribuutnaam, zoekconfiguratie, type, volgorde, naam) VALUES (zoekveld_id_seq.NEXTVAL,'Eigenaar', 'NAAM', 3, NULL, NULL, 'eigenaar');
 
 DROP SEQUENCE bron_id_seq;
 CREATE SEQUENCE bron_id_seq start with 3;
