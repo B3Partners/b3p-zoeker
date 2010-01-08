@@ -4,8 +4,7 @@ CREATE TABLE planeigenaar
   naam character varying(255),
   code character varying(255),
   CONSTRAINT planeigenaar_pkey PRIMARY KEY (id)
-)
-WITH (OIDS=FALSE);
+);
 insert into planeigenaar (naam, code) values ('Amsterdam', '0363');
 insert into planeigenaar (naam, code) values ('Weesp', '0457');
 insert into planeigenaar (naam, code) values ('Blaricum', '0376');
