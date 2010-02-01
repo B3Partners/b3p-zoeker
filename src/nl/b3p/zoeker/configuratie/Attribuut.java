@@ -5,6 +5,9 @@
 
 package nl.b3p.zoeker.configuratie;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
  *
  * @author beurs
@@ -21,7 +24,7 @@ public class Attribuut {
     private Integer type=GEEN_TYPE;
     private Integer volgorde;
     private ZoekConfiguratie zoekConfiguratie;
-
+    
     public Attribuut(){}
     public Attribuut(Attribuut a){
         this.id=a.getId();
@@ -113,17 +116,18 @@ public class Attribuut {
     public void setVolgorde(Integer volgorde) {
         this.volgorde = volgorde;
     }
-/*
-    public JSONObject toJSONObject() throws JSONException{
-        JSONObject json= new JSONObject();
-        json.put("id", this.getId());
-        json.put("attribuutnaam",this.getAttribuutLocalnaam());
-        json.put("label",this.getLabel());
-        json.put("type",this.getType());
-        json.put("zoekConfigId",getZoekConfiguratie().getId());
+
+    public JSONObject toJSON() throws JSONException{
+        JSONObject json = new JSONObject();
+        json.put("id",getId());
+        json.put("naam",getNaam());
+        json.put("attribuutnaam",getAttribuutLocalnaam());
+        json.put("label",getLabel());
+        json.put("type",getType());
+        json.put("volgorde",getVolgorde());
         return json;
     }
-*/
+    
     public String toString(){
         String returnValue="";
         returnValue+=this.getId();

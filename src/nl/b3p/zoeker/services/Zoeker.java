@@ -257,6 +257,32 @@ public class Zoeker {
         }
         return zoekResultaten;
     }
+    public static List getZoekConfiguraties() {
+        Object identity = null;
+        List returnList=null;
+        try {
+            identity = MyEMFDatabase.createEntityManager(MyEMFDatabase.MAIN_EM);
+            EntityManager em = MyEMFDatabase.getEntityManager(MyEMFDatabase.MAIN_EM);
+            EntityTransaction tx = em.getTransaction();
+            tx.begin();
+            try {
+                returnList= em.createQuery("from ZoekConfiguratie").getResultList();
+                tx.commit();
+            } catch (Exception ex) {
+                log.error("Exception occured" + (tx.isActive() ? ", rollback" : "tx not active"), ex);
+                if (tx.isActive()) {
+                    tx.rollback();
+                }
+            }
+
+        } catch (Throwable e) {
+            log.error("Exception occured in search: ", e);
+        } finally {
+            log.debug("Closing entity manager .....");
+            MyEMFDatabase.closeEntityManager(identity, MyEMFDatabase.MAIN_EM);
+        }
+        return returnList;
+    }
 
     /**
      * Maakt een datastore dmv de bron

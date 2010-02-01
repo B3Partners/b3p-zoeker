@@ -5,7 +5,10 @@
 
 package nl.b3p.zoeker.configuratie;
 
+import java.util.Iterator;
 import java.util.Set;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -135,13 +138,7 @@ public class ZoekConfiguratie {
         }else{
             return null;
         }
-    }    
-
-    public JSONObject toJSON(){
-        JSONObject json= new JSONObject();
-        return json;
-    }
-
+    }   
     /**
      * @return the resultaatVelden
      */
@@ -155,4 +152,44 @@ public class ZoekConfiguratie {
     public void setResultaatVelden(Set resultaatVelden) {
         this.resultaatVelden = resultaatVelden;
     }
+
+    public JSONObject toJSON() throws JSONException{
+        JSONObject json= new JSONObject();
+        json.put("id",getId());
+        json.put("naam",getNaam());
+        json.put("featureType",getFeatureType());
+        if (getZoekVelden()!=null){
+            Iterator it=getZoekVelden().iterator();
+            JSONArray jsonZoekVelden=null;
+            while (it.hasNext()){
+                if (jsonZoekVelden==null){
+                    jsonZoekVelden = new JSONArray();
+                }
+                ZoekAttribuut zoekVeld=(ZoekAttribuut) it.next();
+                jsonZoekVelden.put(zoekVeld.toJSON());
+            }
+            json.put("zoekVelden",jsonZoekVelden);
+        }
+        if (getResultaatVelden()!=null){
+            Iterator it=getResultaatVelden().iterator();
+            JSONArray jsonResultaatVelden=null;
+            while (it.hasNext()){
+                if (jsonResultaatVelden==null){
+                    jsonResultaatVelden = new JSONArray();
+                }
+                ResultaatAttribuut resultaatVeld=(ResultaatAttribuut) it.next();
+                jsonResultaatVelden.put(resultaatVeld.toJSON());
+            }
+            json.put("resultaatVelden",jsonResultaatVelden);
+        }
+        if (getParentZoekConfiguratie()!=null){
+            json.put("parentZoekConfiguratie","not yet supported for toJSON()");
+        }
+        if (getBron()!=null){
+            json.put("bron",getParentBron().toJSON());
+        }
+        return json;
+
+    }
+
 }

@@ -4,6 +4,9 @@
  */
 package nl.b3p.zoeker.configuratie;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
  *
  * @author Roy
@@ -102,5 +105,14 @@ public class Bron {
      */
     public void setWachtwoord(String wachtwoord) {
         this.wachtwoord = wachtwoord;
+    }
+
+    public JSONObject toJSON() throws JSONException{
+        JSONObject json= new JSONObject();
+        json.put("id", id);
+        json.put("naam", getNaam());
+        json.put("url", getUrl());
+        json.put("volgorde", getVolgorde());
+        return json;
     }
 }
