@@ -87,7 +87,7 @@ public class ZoekerTest {
     public void searchWithGeom(){
         //ZoekConfiguratie zc = createRoOnlineZoekConfiguratie();
         ZoekConfiguratie zc = createRoOnlineZoekConfiguratie();
-        List resultaten= zoeker.zoekMetConfiguratie(zc, new String[]{arnhemWKT}, 0, new ArrayList());
+        List resultaten= zoeker.zoekMetConfiguratie(zc, new String[]{arnhemWKT}, 10000, new ArrayList());
         System.out.println("Er zijn "+resultaten.size()+" resultaten gevonden:");
         for (int i=0; i < resultaten.size(); i++){
             ZoekResultaat zr=(ZoekResultaat) resultaten.get(i);
@@ -107,7 +107,7 @@ public class ZoekerTest {
         return zc;
     }
     private ZoekConfiguratie createRoOnlineZoekConfiguratie(){
-        Bron bron = new Bron(1,"ro-online","http://afnemers.ruimtelijkeplannen.nl/afnemers/services?Version=1.0.0");
+        Bron bron = new Bron(1,"ro-online","http://pilot.ruimtelijkeplannen.nl/afnemers/services?Version=1.0.0");
         ZoekConfiguratie zc = new ZoekConfiguratie(null,"planzoeken op geometry","app:Plangebied",bron,null);
         
         ZoekAttribuut za = new ZoekAttribuut(null,"op geometry","geometrie", "geom",3,null);

@@ -59,10 +59,7 @@ public class Zoeker {
     private static final Log log = LogFactory.getLog(Zoeker.class);
     private static final int TIMEOUT = 60000;
 
-    public List zoek(Integer[] zoekConfiguratieIds, String searchStrings[], Integer maxResults) {
-        if (maxResults == null || maxResults.intValue() == 0 || maxResults.intValue() > topMaxResults) {
-            maxResults = topMaxResults;
-        }
+    public List zoek(Integer[] zoekConfiguratieIds, String searchStrings[], Integer maxResults) {        
         List results = new ArrayList();
         Object identity = null;
         try {
@@ -107,6 +104,9 @@ public class Zoeker {
      * @param results: De al gevonden resultaten (de nieuwe resultaten worden hier aan toegevoegd.
      */
     public List<ZoekResultaat> zoekMetConfiguratie(ZoekConfiguratie zc, String[] searchStrings, Integer maxResults, List results) {
+        if (maxResults == null || maxResults.intValue() == 0 || maxResults.intValue() > topMaxResults) {
+            maxResults = topMaxResults;
+        }
         if (zc == null || searchStrings == null) {
             return results;
         }
@@ -400,30 +400,11 @@ public class Zoeker {
 
     private Filter createFilter(ZoekAttribuut zoekVeld, String searchString, DataStore ds,FilterFactory2 ff) throws Exception {
         Filter filter=null;
-
         if(zoekVeld.getType()!=null && zoekVeld.getType()==Attribuut.GEOMETRY_TYPE){
-            //CoordinateReferenceSystem crs=CRS.decode("EPSG:28992");
-            /*String wktCrs="PROJCS[\"Amersfoort / RD New\",GEOGCS[\"Amersfoort\",DATUM[\"Amersfoort\",SPHEROID[\"Bessel 1841\",6377397.155,299.1528128,AUTHORITY[\"EPSG\",\"7004\"]],AUTHORITY[\"EPSG\",\"6289\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.01745329251994328,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4289\"]],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],PROJECTION[\"Oblique_Stereographic\"],PARAMETER[\"latitude_of_origin\",52.15616055555555],PARAMETER[\"central_meridian\",5.38763888888889],PARAMETER[\"scale_factor\",0.9999079],PARAMETER[\"false_easting\",155000],PARAMETER[\"false_northing\",463000],AUTHORITY[\"EPSG\",\"28992\"],AXIS[\"X\",EAST],AXIS[\"Y\",NORTH]]";
-            CRSFactory crsFactory = ReferencingFactoryFinder.getCRSFactory(null);
-            CoordinateReferenceSystem crs = crsFactory.createFromWKT(wktCrs);
-
-            PositionFactory positionFactory = new PositionFactoryImpl(crs);
-            GeometryFactory geometryFactory = new GeometryFactoryImpl(crs,positionFactory);*/
-            /*
-            PrimitiveFactory primitiveFactory = new PrimitiveFactoryImpl(crs,positionFactory);
-            AggregateFactory aggregateFactory = new AggregateFactoryImpl(crs);
-            WKTParser parser = new WKTParser(geometryFactory, primitiveFactory, positionFactory, aggregateFactory );
-            Geometry geom= parser.parse(searchString);
-            */
-            /*WKTReader wKTReader = new WKTReader(crs);
-            Geometry geom=wKTReader.read(searchString);            
-            filter=ff.equals(zoekVeld.getAttribuutnaam(),geom);*/
-
             WKTReader wktreader = new WKTReader(new GeometryFactory(new PrecisionModel(), 28992));
             try {
                 Geometry geom = wktreader.read(searchString);
-                filter=ff.within(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(geom));
-                //filter=CQL.toFilter("INTERSECT("+zoekVeld.getAttribuutLocalnaam()+", "+searchString)
+                filter=ff.within(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(geom));                
             }catch(Exception e){
                 log.error("Fout bij parsen wkt geometry");
             }
