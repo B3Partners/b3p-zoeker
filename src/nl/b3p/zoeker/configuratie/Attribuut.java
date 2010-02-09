@@ -32,12 +32,19 @@ public class Attribuut {
         this.attribuutnaam=a.getAttribuutnaam();
         this.label=a.getLabel();
         this.type=a.getType();
+        this.volgorde=a.getVolgorde();
         this.zoekConfiguratie=a.getZoekConfiguratie();
     }
-    public Attribuut(Integer id, String attribuutnaam, String label){
+    public Attribuut(Integer id, String naam, String attribuutnaam, String label, Integer type, Integer volgorde){
         this.id=id;
+        this.naam=naam;
         this.attribuutnaam=attribuutnaam;
         this.label=label;
+        this.type=type;
+        this.volgorde=volgorde;
+    }
+    public Attribuut(Integer id, String attribuutnaam, String label){
+        this(id,null,attribuutnaam,label,null,null);
     }
 
     public Integer getId() {

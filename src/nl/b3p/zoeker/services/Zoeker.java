@@ -4,6 +4,10 @@
  */
 package nl.b3p.zoeker.services;
 
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.PrecisionModel;
+import com.vividsolutions.jts.io.WKTReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,6 +17,7 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
+import nl.b3p.zoeker.configuratie.Attribuut;
 import nl.b3p.zoeker.configuratie.Bron;
 import nl.b3p.zoeker.configuratie.ResultaatAttribuut;
 import nl.b3p.zoeker.configuratie.ZoekAttribuut;
@@ -22,9 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
-import org.geotools.data.DefaultFeatureResults;
 import org.geotools.data.DefaultQuery;
-import org.geotools.data.FeatureReader;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.SchemaNotFoundException;
 import org.geotools.data.oracle.OracleDataStoreFactory;
@@ -32,14 +35,19 @@ import org.geotools.data.ows.WFSCapabilities;
 import org.geotools.data.postgis.PostgisDataStoreFactory;
 import org.geotools.data.wfs.WFSDataStoreFactory;
 import org.geotools.data.wfs.v1_0_0.WFS_1_0_0_DataStore;
+import org.geotools.data.wfs.v1_1_0.WFS_1_1_0_DataStore;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.GeoTools;
 import org.geotools.feature.FeatureCollection;
+import org.geotools.feature.FeatureIterator;
 import org.geotools.filter.FilterCapabilities;
+import org.geotools.filter.spatial.EqualsImpl;
 import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
 import org.opengis.filter.Filter;
+import org.opengis.filter.FilterFactory;
 import org.opengis.filter.FilterFactory2;
+import org.opengis.filter.expression.Expression;
 
 /**
  *
@@ -98,7 +106,7 @@ public class Zoeker {
      * @param maxResults: Het maximaal aantal resultaten dat getoond moeten worden.
      * @param results: De al gevonden resultaten (de nieuwe resultaten worden hier aan toegevoegd.
      */
-    private List zoekMetConfiguratie(ZoekConfiguratie zc, String[] searchStrings, Integer maxResults, List results) {
+    public List<ZoekResultaat> zoekMetConfiguratie(ZoekConfiguratie zc, String[] searchStrings, Integer maxResults, List results) {
         if (zc == null || searchStrings == null) {
             return results;
         }
@@ -109,7 +117,8 @@ public class Zoeker {
             ds = getDataStore(bron);
             if (ds != null) {
                 FeatureCollection fc = null;
-                FeatureReader reader = null;
+                //FeatureReader reader = null;
+                FeatureIterator fi=null;
                 try {
                     if (ds instanceof WFS_1_0_0_DataStore) {
                         WFS_1_0_0_DataStore wfs100ds = (WFS_1_0_0_DataStore) ds;
@@ -120,6 +129,7 @@ public class Zoeker {
                     }
                     FeatureSource fs = ds.getFeatureSource(zc.getFeatureType());
                     FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(GeoTools.getDefaultHints());
+                    //FilterFactory ff = CommonFactoryFinder.getFilterFactory(GeoTools.getDefaultHints());
                     if (zc.getZoekVelden() == null) {
                         throw new Exception("Fout in zoekconfiguratie. Er zijn geen zoekvelden gedefineerd");
                     }
@@ -128,26 +138,27 @@ public class Zoeker {
                     }
                     Iterator it = zc.getZoekVelden().iterator();
                     List filters = new ArrayList();
-                    Filter filter = null;
-                    //omdat het and filter het niet doet kan je maar 1 filter meegegeven:
+                    
+                    //omdat het and WFS filter het niet doet kan je maar 1 filter meegegeven:
                     //for(int i=0; it.hasNext(); i++){
                     //de filterIndex geeft aan welk filter is meegezonden met het verzoek.
                     int filterIndex = -1;
                     ArrayList properties = new ArrayList();
                     for (int i = 0; it.hasNext() && filterIndex == -1; i++) {
                         ZoekAttribuut zoekVeld = (ZoekAttribuut) it.next();
-                        if (ds instanceof WFS_1_0_0_DataStore) {
-                            filters.add(ff.equal(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchStrings[i]), false));
-                        } else {
-                            if (searchStrings[i].length() > 0) {
-                                filters.add(ff.like(ff.property(zoekVeld.getAttribuutLocalnaam()), "*" + searchStrings[i] + "*"));
-                                filterIndex = i;
+                        Filter filter= createFilter(zoekVeld,searchStrings[i],ds,ff);
+                        if (filter!=null){
+                            filters.add(filter);
+                            if (ds instanceof WFS_1_0_0_DataStore || ds instanceof WFS_1_1_0_DataStore) {
+                                filterIndex=i;
                             }
                         }
                         //omdat het filter niet goed werkt moeten we met de hand controleren maar dan
                         //moeten we wel de bevraagde attributen ophalen
-                        properties.add(zoekVeld.getAttribuutLocalnaam());
+                        if (!zoekVeld.getType().equals(ZoekAttribuut.GEOMETRY_TYPE))
+                            properties.add(zoekVeld.getAttribuutLocalnaam());
                     }
+                    Filter filter = null;
                     if (filters.size() == 1) {
                         filter = (Filter) filters.get(0);
                     } else {
@@ -174,25 +185,29 @@ public class Zoeker {
                     }
                     query.setPropertyNames(properties);
                     //maak reader aan.
-                    DefaultFeatureResults fresults = (DefaultFeatureResults) fs.getFeatures(query);
-                    reader = fresults.reader();
-                    //fi=fc.iterator();
-                    while (reader.hasNext()) {
-                        Feature f = reader.next();
+                    //DefaultFeatureResults fresults = (DefaultFeatureResults) fs.getFeatures(query);
+                    fc = fs.getFeatures(query);
+                    //reader = fresults.reader();
+                    fi=fc.features();
+                    while (fi.hasNext()) {
+                        Feature f = fi.next();
                         Iterator zit = zc.getZoekVelden().iterator();
                         boolean tonen = true;
-                        for (int i = 0; zit.hasNext() && tonen; i++) {
-                            ZoekAttribuut zak = (ZoekAttribuut) zit.next();
-                            if (i == filterIndex) {//is al gechecked met het ophalen dus hoeft niet nog een keer gechecked te worden.
-                            } else if (searchStrings[i] == null || searchStrings[i].length() == 0) {
-                                //als searchstrings leeg is dan ook niet controleren.
-                            } else {
-                                if (f.getProperty(zak.getAttribuutLocalnaam()) == null) {
-                                    tonen = false;
-                                } else if (f.getProperty(zak.getAttribuutLocalnaam()).getValue() == null) {
-                                    tonen = false;
-                                } else if (!f.getProperty(zak.getAttribuutLocalnaam()).getValue().toString().matches(searchStrings[i])) {
-                                    tonen = false;
+                        //De overige properties controleren voor een wfs filter.
+                        if (ds instanceof WFS_1_0_0_DataStore || ds instanceof WFS_1_1_0_DataStore) {
+                            for (int i = 0; zit.hasNext() && tonen; i++) {
+                                ZoekAttribuut zak = (ZoekAttribuut) zit.next();
+                                if (i == filterIndex) {//is al gechecked met het ophalen dus hoeft niet nog een keer gechecked te worden.
+                                } else if (searchStrings[i] == null || searchStrings[i].length() == 0) {
+                                    //als searchstrings leeg is dan ook niet controleren.
+                                } else {
+                                    if (f.getProperty(zak.getAttribuutLocalnaam()) == null) {
+                                        tonen = false;
+                                    } else if (f.getProperty(zak.getAttribuutLocalnaam()).getValue() == null) {
+                                        tonen = false;
+                                    } else if (!f.getProperty(zak.getAttribuutLocalnaam()).getValue().toString().matches(searchStrings[i])) {
+                                        tonen = false;
+                                    }
                                 }
                             }
                         }
@@ -241,9 +256,13 @@ public class Zoeker {
                 } catch (Exception e) {
                     log.error("Fout bij laden plannen: ", e);
                 } finally {
-                    if (reader != null) {
+                    /*if (reader != null) {
                         reader.close();
+                    }*/
+                    if (fc!=null && fi!=null){
+                        fc.close(fi);
                     }
+
                 }
             } else {
                 log.error("Kan geen datastore maken van bron");
@@ -266,7 +285,7 @@ public class Zoeker {
             EntityTransaction tx = em.getTransaction();
             tx.begin();
             try {
-                returnList= em.createQuery("from ZoekConfiguratie").getResultList();
+                returnList= em.createQuery("from ZoekConfiguratie z").getResultList();
                 tx.commit();
             } catch (Exception ex) {
                 log.error("Exception occured" + (tx.isActive() ? ", rollback" : "tx not active"), ex);
@@ -378,4 +397,47 @@ public class Zoeker {
         }
         return DataStoreFinder.getDataStore(params);
     }
+
+    private Filter createFilter(ZoekAttribuut zoekVeld, String searchString, DataStore ds,FilterFactory2 ff) throws Exception {
+        Filter filter=null;
+
+        if(zoekVeld.getType()!=null && zoekVeld.getType()==Attribuut.GEOMETRY_TYPE){
+            //CoordinateReferenceSystem crs=CRS.decode("EPSG:28992");
+            /*String wktCrs="PROJCS[\"Amersfoort / RD New\",GEOGCS[\"Amersfoort\",DATUM[\"Amersfoort\",SPHEROID[\"Bessel 1841\",6377397.155,299.1528128,AUTHORITY[\"EPSG\",\"7004\"]],AUTHORITY[\"EPSG\",\"6289\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.01745329251994328,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4289\"]],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],PROJECTION[\"Oblique_Stereographic\"],PARAMETER[\"latitude_of_origin\",52.15616055555555],PARAMETER[\"central_meridian\",5.38763888888889],PARAMETER[\"scale_factor\",0.9999079],PARAMETER[\"false_easting\",155000],PARAMETER[\"false_northing\",463000],AUTHORITY[\"EPSG\",\"28992\"],AXIS[\"X\",EAST],AXIS[\"Y\",NORTH]]";
+            CRSFactory crsFactory = ReferencingFactoryFinder.getCRSFactory(null);
+            CoordinateReferenceSystem crs = crsFactory.createFromWKT(wktCrs);
+
+            PositionFactory positionFactory = new PositionFactoryImpl(crs);
+            GeometryFactory geometryFactory = new GeometryFactoryImpl(crs,positionFactory);*/
+            /*
+            PrimitiveFactory primitiveFactory = new PrimitiveFactoryImpl(crs,positionFactory);
+            AggregateFactory aggregateFactory = new AggregateFactoryImpl(crs);
+            WKTParser parser = new WKTParser(geometryFactory, primitiveFactory, positionFactory, aggregateFactory );
+            Geometry geom= parser.parse(searchString);
+            */
+            /*WKTReader wKTReader = new WKTReader(crs);
+            Geometry geom=wKTReader.read(searchString);            
+            filter=ff.equals(zoekVeld.getAttribuutnaam(),geom);*/
+
+            WKTReader wktreader = new WKTReader(new GeometryFactory(new PrecisionModel(), 28992));
+            try {
+                Geometry geom = wktreader.read(searchString);
+                filter=ff.within(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(geom));
+                //filter=CQL.toFilter("INTERSECT("+zoekVeld.getAttribuutLocalnaam()+", "+searchString)
+            }catch(Exception e){
+                log.error("Fout bij parsen wkt geometry");
+            }
+
+        }else{
+            if (ds instanceof WFS_1_0_0_DataStore) {
+                filter=ff.equal(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString), false);
+            } else {
+                if (searchString.length() > 0) {
+                    filter=ff.like(ff.property(zoekVeld.getAttribuutLocalnaam()), searchString);
+                }
+            }
+        }
+        return filter;
+    }
+   
 }

@@ -5,6 +5,7 @@
 
 package nl.b3p.zoeker.configuratie;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import org.json.JSONArray;
@@ -36,6 +37,13 @@ public class ZoekConfiguratie {
 
     public ZoekConfiguratie(){
     
+    }
+    public ZoekConfiguratie(Integer id, String naam, String featureType, Bron parentBron, ZoekConfiguratie parentZoekConfiguratie){
+        this.id=id;
+        this.naam=naam;
+        this.featureType=featureType;
+        this.parentBron=parentBron;
+        this.parentZoekConfiguratie=parentZoekConfiguratie;
     }
 
     /*public ZoekConfiguratie(String featureType,Set zoekVelden,String idAttribuut, String toonAttribuut){
@@ -153,6 +161,29 @@ public class ZoekConfiguratie {
         this.resultaatVelden = resultaatVelden;
     }
 
+    /**
+     * Voeg een zoekAttribuut toe
+     */
+    public void addZoekAttribuut(ZoekAttribuut zoekAttribuut) {
+        if (zoekVelden==null){
+            zoekVelden=new HashSet();
+        }
+        zoekAttribuut.setZoekConfiguratie(this);
+        zoekVelden.add(zoekAttribuut);
+    }
+    /**
+     * Voeg een ResultaatAttribuut toe
+     */
+    public void addResultaatAttribuut(ResultaatAttribuut resultaatAttribuut) {
+        if (resultaatVelden==null){
+            resultaatVelden=new HashSet();
+        }
+        resultaatAttribuut.setZoekConfiguratie(this);
+        resultaatVelden.add(resultaatAttribuut);
+    }
+    /**
+     * maak een Json object van dit object
+     */
     public JSONObject toJSON() throws JSONException{
         JSONObject json= new JSONObject();
         json.put("id",getId());
@@ -183,7 +214,7 @@ public class ZoekConfiguratie {
             json.put("resultaatVelden",jsonResultaatVelden);
         }
         if (getParentZoekConfiguratie()!=null){
-            json.put("parentZoekConfiguratie","not yet supported for toJSON()");
+            json.put("parentZoekConfiguratieId",getParentZoekConfiguratie().getId());
         }
         if (getBron()!=null){
             json.put("bron",getParentBron().toJSON());
@@ -191,5 +222,4 @@ public class ZoekConfiguratie {
         return json;
 
     }
-
 }

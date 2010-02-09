@@ -22,6 +22,17 @@ public class Bron {
 
     public Bron() {
     }
+    public Bron(Integer id, String naam, String url, String gebruikersnaam, String wachtwoord, Integer volgorde){
+        this.id=id;
+        this.naam=naam;
+        this.url=url;
+        this.gebruikersnaam=gebruikersnaam;
+        this.wachtwoord=wachtwoord;
+        this.volgorde=volgorde;
+    }
+    public Bron(Integer id, String naam, String url){
+        this(id,naam,url,null,null,null);
+    }
 
 //getters and setters
     /**
