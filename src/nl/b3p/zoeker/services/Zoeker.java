@@ -154,9 +154,8 @@ public class Zoeker {
                             }
                         }
                         //omdat het filter niet goed werkt moeten we met de hand controleren maar dan
-                        //moeten we wel de bevraagde attributen ophalen
-                        if (!zoekVeld.getType().equals(ZoekAttribuut.GEOMETRY_TYPE))
-                            properties.add(zoekVeld.getAttribuutLocalnaam());
+                        //moeten we wel de bevraagde attributen ophalen                        
+                        properties.add(zoekVeld.getAttribuutLocalnaam());
                     }
                     Filter filter = null;
                     if (filters.size() == 1) {
