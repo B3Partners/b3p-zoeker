@@ -164,7 +164,7 @@ public class ZoekResultaat implements Comparable{
         if (getAttributen()!=null){            
             for (int i=0; i < getAttributen().size(); i++){
                 ZoekResultaatAttribuut a=(ZoekResultaatAttribuut) getAttributen().get(i);
-                if (a.getType()==type)
+                if (a.getType()!=null && a.getType()==type)
                     returnValue.add(a.getWaarde());
             }
         }

@@ -413,7 +413,7 @@ public class Zoeker {
                 filter=ff.equal(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString), false);
             } else {
                 if (searchString.length() > 0) {
-                    filter=ff.like(ff.property(zoekVeld.getAttribuutLocalnaam()), searchString);
+                    filter=ff.like(ff.property(zoekVeld.getAttribuutLocalnaam()), "*"+searchString+"*");
                 }
             }
         }
