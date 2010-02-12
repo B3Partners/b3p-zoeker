@@ -78,21 +78,18 @@ public class ZoekerTest {
         //MyEMFDatabase.closeEntityManager(owner, MyEMFDatabase.MAIN_EM);
     }
 
-    // TODO add test methods here.
-    // The methods must be annotated with annotation @Test. For example:
-    //
-    // @Test
-    // public void hello() {}
     @Test
+    /**
+     */
     public void searchWithGeom(){
         //test op roonline deegree wfs
-        /*ZoekConfiguratie zc = createRoOnlineZoekConfiguratie();
+        ZoekConfiguratie zc = createRoOnlineZoekConfiguratie();
         List resultaten= zoeker.zoekMetConfiguratie(zc, new String[]{arnhemWKT}, 10000, new ArrayList());
         printResultsToLog(resultaten);
         //test op kaartenbalie public mapserver wfs
         ZoekConfiguratie zc2=createCbsWfsZoekConfiguratie();
-        resultaten= zoeker.zoekMetConfiguratie(zc2, new String[]{arnhemWKT}, 10000, new ArrayList());
-        printResultsToLog(resultaten);*/
+        List resultaten2= zoeker.zoekMetConfiguratie(zc2, new String[]{arnhemWKT}, 10000, new ArrayList());
+        printResultsToLog(resultaten2);
         //
         ZoekConfiguratie zc3=createCbsJDBCZoekConfiguratie();
         List resultaten3= zoeker.zoekMetConfiguratie(zc3, new String[]{"Arnhem"}, 10000, new ArrayList());

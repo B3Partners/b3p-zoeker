@@ -129,8 +129,7 @@ public class ZoekResultaat implements Comparable{
      */
     public String getId() {
         ArrayList waarden=getWaarden(Attribuut.ID_TYPE);
-        if (waarden.size()==0){
-            log.error("Geen resultaat attribuut geconfigureerd met type ID");
+        if (waarden.size()==0){            
             return null;
         }else if (waarden.size()>1){
             log.error("Meerdere resultaat attributen geconfigureerd met type ID, dit mag er maar 1 zijn. De eerste wordt gebruikt");
