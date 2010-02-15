@@ -17,6 +17,7 @@ public class Attribuut {
     public final static int ID_TYPE=1;
     public final static int TOON_TYPE=2;
     public final static int GEOMETRY_TYPE=3;
+    public final static int STRAAL_TYPE=100;
     private Integer id=null;
     private String naam=null;
     private String attribuutnaam=null;
@@ -101,6 +102,9 @@ public class Attribuut {
      * @return the type
      */
     public Integer getType() {
+        if (type==null){
+            return GEEN_TYPE;
+        }
         return type;
     }
 
@@ -150,6 +154,9 @@ public class Attribuut {
      * Removes the prefix.
      */
     public static String removeXmlPrefix(String name){
+        if (name==null){
+            return null;
+        }
         String returnValue= new String(name);
         int first=returnValue.indexOf(":");
         if (first >=0){

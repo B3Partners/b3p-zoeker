@@ -27,9 +27,9 @@ public class ZoekConfiguratie {
     // tabel naam/feature type.
     private String featureType=null;
     // kolom waarop gezocht moet worden.
-    private Set zoekVelden=null;
+    private Set<ZoekAttribuut> zoekVelden=null;
     // alle resultaat velden.
-    private Set resultaatVelden=null;
+    private Set<ResultaatAttribuut> resultaatVelden=null;
     // kolom /attribuut waar het id van het gezochte object in staat.
     private ZoekConfiguratie parentZoekConfiguratie = null;
     // bron

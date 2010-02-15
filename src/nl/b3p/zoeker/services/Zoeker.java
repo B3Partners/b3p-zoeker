@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
@@ -41,13 +42,10 @@ import org.geotools.factory.GeoTools;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.filter.FilterCapabilities;
-import org.geotools.filter.spatial.EqualsImpl;
 import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
 import org.opengis.filter.Filter;
-import org.opengis.filter.FilterFactory;
 import org.opengis.filter.FilterFactory2;
-import org.opengis.filter.expression.Expression;
 
 /**
  *
@@ -146,7 +144,7 @@ public class Zoeker {
                     ArrayList properties = new ArrayList();
                     for (int i = 0; it.hasNext() && filterIndex == -1; i++) {
                         ZoekAttribuut zoekVeld = (ZoekAttribuut) it.next();
-                        Filter filter= createFilter(zoekVeld,searchStrings[i],ds,ff);
+                        Filter filter= createFilter(ZoekAttribuut.setToZoekVeldenArray(zc.getZoekVelden()),searchStrings,i,ds,ff);
                         if (filter!=null){
                             filters.add(filter);
                             if (ds instanceof WFS_1_0_0_DataStore || ds instanceof WFS_1_1_0_DataStore) {
@@ -196,16 +194,18 @@ public class Zoeker {
                         if (ds instanceof WFS_1_0_0_DataStore || ds instanceof WFS_1_1_0_DataStore) {
                             for (int i = 0; zit.hasNext() && tonen; i++) {
                                 ZoekAttribuut zak = (ZoekAttribuut) zit.next();
-                                if (i == filterIndex) {//is al gechecked met het ophalen dus hoeft niet nog een keer gechecked te worden.
-                                } else if (searchStrings[i] == null || searchStrings[i].length() == 0) {
-                                    //als searchstrings leeg is dan ook niet controleren.
-                                } else {
-                                    if (f.getProperty(zak.getAttribuutLocalnaam()) == null) {
-                                        tonen = false;
-                                    } else if (f.getProperty(zak.getAttribuutLocalnaam()).getValue() == null) {
-                                        tonen = false;
-                                    } else if (!f.getProperty(zak.getAttribuutLocalnaam()).getValue().toString().matches(searchStrings[i])) {
-                                        tonen = false;
+                                if (zak.isFilterMogelijk()){
+                                    if (i == filterIndex) {//is al gechecked met het ophalen dus hoeft niet nog een keer gechecked te worden.
+                                    } else if (searchStrings[i] == null || searchStrings[i].length() == 0) {
+                                        //als searchstrings leeg is dan ook niet controleren.
+                                    } else {
+                                        if (f.getProperty(zak.getAttribuutLocalnaam()) == null) {
+                                            tonen = false;
+                                        } else if (f.getProperty(zak.getAttribuutLocalnaam()).getValue() == null) {
+                                            tonen = false;
+                                        } else if (!f.getProperty(zak.getAttribuutLocalnaam()).getValue().toString().matches(searchStrings[i])) {
+                                            tonen = false;
+                                        }
                                     }
                                 }
                             }
@@ -255,9 +255,6 @@ public class Zoeker {
                 } catch (Exception e) {
                     log.error("Fout bij laden plannen: ", e);
                 } finally {
-                    /*if (reader != null) {
-                        reader.close();
-                    }*/
                     if (fc!=null && fi!=null){
                         fc.close(fi);
                     }
@@ -396,19 +393,38 @@ public class Zoeker {
         }
         return DataStoreFinder.getDataStore(params);
     }
-
-    private Filter createFilter(ZoekAttribuut zoekVeld, String searchString, DataStore ds,FilterFactory2 ff) throws Exception {
+    /**
+     * Maakt het filter voor het zoekveld met als value het zoek criterium.
+     * Geef de alle zoekvelden mee en alle ingevulde strings omdat sommige zoekvelden afhankelijk kunnen zijn van elkaar.
+     */
+    private Filter createFilter(ZoekAttribuut[] zoekVelden, String[] searchStrings, int index, DataStore ds,FilterFactory2 ff) throws Exception {
+        String searchString=searchStrings[index];
+        ZoekAttribuut zoekVeld=zoekVelden[index];
         Filter filter=null;
-        if(zoekVeld.getType()!=null && zoekVeld.getType()==Attribuut.GEOMETRY_TYPE){
+        if(zoekVeld.getType()==Attribuut.GEOMETRY_TYPE){
             WKTReader wktreader = new WKTReader(new GeometryFactory(new PrecisionModel(), 28992));
             try {
                 Geometry geom = wktreader.read(searchString);
+                //zijn er nog zoekAttributen ingevuld die betrekking hebben op de geometry (zoals straal)
+                for (int i=0; i < zoekVelden.length; i++){
+                    //skip voor dit zoekveld
+                    if (i==index)
+                        continue;
+                    //bij straal maak een buffer.
+                    if (zoekVelden[i].getType()==Attribuut.STRAAL_TYPE &&searchStrings[i]!=null && searchStrings[i].length()>0){
+                        try{
+                            double straal=Double.parseDouble(searchStrings[i]);
+                            geom=geom.buffer(straal);
+                        }catch(NumberFormatException nfe){
+                            log.error("Ingevulde zoekopdracht "+zoekVelden[i].getNaam()+ "moet een nummer zijn");
+                        }
+                    }
+                }
                 filter=ff.within(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(geom));                
             }catch(Exception e){
                 log.error("Fout bij parsen wkt geometry");
             }
-
-        }else{
+        }else if (zoekVeld.isFilterMogelijk()){
             if (ds instanceof WFS_1_0_0_DataStore) {
                 filter=ff.equal(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString), false);
             } else {
@@ -419,5 +435,4 @@ public class Zoeker {
         }
         return filter;
     }
-   
 }

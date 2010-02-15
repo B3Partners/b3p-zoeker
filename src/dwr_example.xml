@@ -9,9 +9,11 @@
         </create>
         <convert converter="bean" match="nl.b3p.zoeker.services.ZoekResultaat"/>
         <convert converter="bean" match="nl.b3p.zoeker.services.ZoekResultaatAttribuut"/>
-        <convert converter="bean" match="nl.b3p.zoeker.configuratie.ZoekConfiguratie"/>
-        <convert converter="bean" match="nl.b3p.zoeker.configuratie.Bron"/>
         <convert converter="bean" match="nl.b3p.zoeker.configuratie.ResultaatAttribuut"/>
         <convert converter="bean" match="nl.b3p.zoeker.configuratie.ZoekAttribuut"/>
+        <convert converter="bean" match="nl.b3p.zoeker.configuratie.ZoekConfiguratie"/>
+        <convert converter="bean" match="nl.b3p.zoeker.configuratie.Bron">
+            <param name="exclude" value="gebruikersnaam, wachtwoord"/>
+        </convert>
     </allow>
 </dwr>
