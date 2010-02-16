@@ -17,7 +17,13 @@ public class Attribuut {
     public final static int ID_TYPE=1;
     public final static int TOON_TYPE=2;
     public final static int GEOMETRY_TYPE=3;
+    //datum typen
+    public final static int KLEINER_DAN_TYPE=4;
+    public final static int GROTER_DAN_TYPE=5;
+
+    //typen die betrekking hebben op een van de andere typen.
     public final static int STRAAL_TYPE=100;
+    
     private Integer id=null;
     private String naam=null;
     private String attribuutnaam=null;

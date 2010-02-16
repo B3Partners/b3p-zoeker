@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import javax.persistence.EntityManager;
+import nl.b3p.zoeker.configuratie.Attribuut;
 import org.geotools.util.logging.Logging;
 import nl.b3p.zoeker.configuratie.Bron;
 import nl.b3p.zoeker.configuratie.ResultaatAttribuut;
@@ -81,28 +82,36 @@ public class ZoekerTest {
     @Test
     /**
      */
-    public void searchWithGeom(){
+    public void searchWithGeomDeegree(){
         //test op roonline deegree wfs
-        ZoekConfiguratie zc = createRoOnlineZoekConfiguratie();
+        Bron bron = new Bron(1,"ro-online","http://pilot.ruimtelijkeplannen.nl/afnemers/services?Version=1.0.0");
+        ZoekConfiguratie zc = new ZoekConfiguratie(null,"planzoeken op geometry","app:Plangebied",bron,null);
+
+        ZoekAttribuut za = new ZoekAttribuut(null,"op geometry","geometrie", "geom",3,null);
+        ResultaatAttribuut ra = new ResultaatAttribuut(null,"Identificatie","app:naam","Plannaam",2,null);
+
+        zc.addZoekAttribuut(za);
+        zc.addResultaatAttribuut(ra);
         List resultaten= zoeker.zoekMetConfiguratie(zc, new String[]{arnhemWKT}, 10000, new ArrayList());
-        printResultsToLog(resultaten);
+        printResultsToLog(resultaten);       
+    }
+    @Test
+    public void searchWithGeomMapserver(){        
         //test op kaartenbalie public mapserver wfs
-        ZoekConfiguratie zc2=createCbsWfsZoekConfiguratie();
-        List resultaten2= zoeker.zoekMetConfiguratie(zc2, new String[]{arnhemWKT}, 10000, new ArrayList());
-        printResultsToLog(resultaten2);
-        //
-        ZoekConfiguratie zc3=createCbsJDBCZoekConfiguratie();
-        List resultaten3= zoeker.zoekMetConfiguratie(zc3, new String[]{"Arnhem"}, 10000, new ArrayList());
-        printResultsToLog(resultaten3);
+        Bron bron = new Bron(1,"cbs-wfs","http://public-wms.kaartenbalie.nl/wms/nederland?Version=1.0.0");
+        ZoekConfiguratie zc = new ZoekConfiguratie(null,"Buurt zoeken op geometry","buurten_2006",bron,null);
+
+        ZoekAttribuut za = new ZoekAttribuut(null,"op geometry","msGeometry", "msGeometry",3,null);
+        ResultaatAttribuut ra = new ResultaatAttribuut(null,"bu_naam","bu_naam","bu_naam",2,null);
+
+        zc.addZoekAttribuut(za);
+        zc.addResultaatAttribuut(ra);
+        List resultaten= zoeker.zoekMetConfiguratie(zc, new String[]{arnhemWKT}, 10000, new ArrayList());
+        printResultsToLog(resultaten);        
     }
-    private void printResultsToLog(List resultaten){
-        log.info("Er zijn "+resultaten.size()+" resultaten gevonden:");
-        for (int i=0; i < resultaten.size(); i++){
-            ZoekResultaat zr=(ZoekResultaat) resultaten.get(i);
-            log.info(zr.getLabel());
-        }
-    }
-    private ZoekConfiguratie createCbsPostgisZoekConfiguratie(){
+
+    @Test
+    public void searchWithStringPostgis(){
         Bron bron = new Bron(1,"cbs","jdbc:postgresql://b3p-demoserver:5432/demo_kaartenbalie","postgres","***REMOVED***",null);
         ZoekConfiguratie zc = new ZoekConfiguratie(null,"Buurten op geom","buurt_2006_cbs",bron,null);
 
@@ -112,50 +121,52 @@ public class ZoekerTest {
         zc.addZoekAttribuut(za);
         zc.addResultaatAttribuut(ra);
 
-        return zc;
+        List resultaten3= zoeker.zoekMetConfiguratie(zc, new String[]{"Arnhem"}, 10000, new ArrayList());
+        printResultsToLog(resultaten3);
     }
-    private ZoekConfiguratie createRoOnlineZoekConfiguratie(){
-        Bron bron = new Bron(1,"ro-online","http://pilot.ruimtelijkeplannen.nl/afnemers/services?Version=1.0.0");
-        ZoekConfiguratie zc = new ZoekConfiguratie(null,"planzoeken op geometry","app:Plangebied",bron,null);
-        
-        ZoekAttribuut za = new ZoekAttribuut(null,"op geometry","geometrie", "geom",3,null);
-        ResultaatAttribuut ra = new ResultaatAttribuut(null,"Identificatie","app:naam","Plannaam",2,null);
-        
-        zc.addZoekAttribuut(za);
-        zc.addResultaatAttribuut(ra);
-
-        return zc;
-    }
-
-    private ZoekConfiguratie createCbsWfsZoekConfiguratie(){
+    @Test
+    public void searchWithLessGreater(){
+        //test op kaartenbalie public mapserver wfs
         Bron bron = new Bron(1,"cbs-wfs","http://public-wms.kaartenbalie.nl/wms/nederland?Version=1.0.0");
-        ZoekConfiguratie zc = new ZoekConfiguratie(null,"Buurt zoeken op geometry","buurten_2006",bron,null);
+        ZoekConfiguratie zc = new ZoekConfiguratie(null,"Buurt zoeken op geometry","gemeenten_2006",bron,null);
 
-        ZoekAttribuut za = new ZoekAttribuut(null,"op geometry","msGeometry", "msGeometry",3,null);
-        ResultaatAttribuut ra = new ResultaatAttribuut(null,"bu_naam","bu_naam","bu_naam",2,null);
+        ZoekAttribuut za1= new ZoekAttribuut(null,"aantal inwoners","aant_inw", "aantal inwoners",Attribuut.GROTER_DAN_TYPE,1);
+        ZoekAttribuut za2 = new ZoekAttribuut(null,"aantal inwoners","aant_inw", "aantal inwoners",Attribuut.KLEINER_DAN_TYPE,2);
+        ResultaatAttribuut ra = new ResultaatAttribuut(null,"Gemeente","gm_naam","Gemeente",2,null);
+
+        zc.addZoekAttribuut(za1);
+        zc.addZoekAttribuut(za2);
+        zc.addResultaatAttribuut(ra);
+        List resultaten= zoeker.zoekMetConfiguratie(zc, new String[]{"10000","15000"}, 25, new ArrayList());
+        printResultsToLog(resultaten);
+    }
+    public void searchWith2LikeFilters(){
+        //test op kaartenbalie public mapserver wfs
+        Bron bron = new Bron(1,"cbs-wfs","http://public-wms.kaartenbalie.nl/wms/nederland?Version=1.0.0");
+        ZoekConfiguratie zc = new ZoekConfiguratie(null,"Buurt zoeken","buurten_2006",bron,null);
+
+        ZoekAttribuut za1= new ZoekAttribuut(null,"aantal inwoners","gm_naam", "aantal inwoners",Attribuut.GEEN_TYPE,1);
+        ZoekAttribuut za = new ZoekAttribuut(null,"aantal inwoners","bu_naam", "aantal inwoners",Attribuut.GEEN_TYPE,2);        
+        ResultaatAttribuut ra = new ResultaatAttribuut(null,"Gemeente","gm_naam","Gemeente",2,null);
 
         zc.addZoekAttribuut(za);
+        zc.addZoekAttribuut(za1);
         zc.addResultaatAttribuut(ra);
-
-        return zc;
+        List resultaten= zoeker.zoekMetConfiguratie(zc, new String[]{"Utrecht","Bedrijventerrein Lageweide"}, 25, new ArrayList());
+        printResultsToLog(resultaten);
     }
-    //INSERT INTO bron ( (2, 'local', 'jdbc:postgresql://vulhierjehostin:5432/vulhierjedatabasein.ennadepunthetschema', 2, 'vulhierdeusernamein', 'vulhierhetwachtwoordin');
 
-    private ZoekConfiguratie createCbsJDBCZoekConfiguratie(){
-        Bron bron = new Bron(1,"cbs-jdbc","jdbc:postgresql://b3p-demoserver:5432/b3p_gis","postgres","***REMOVED***",null);
-        ZoekConfiguratie zc = new ZoekConfiguratie(null,"Gemeentezoeken op naam","gem_2006_cbs",bron,null);
-
-        ZoekAttribuut za = new ZoekAttribuut(null,"opnaam","gm_naam", "gm_naam",null,null);
-        ResultaatAttribuut ra = new ResultaatAttribuut(null,"gm_naam","gm_naam","gm_naam",2,null);
-
-        zc.addZoekAttribuut(za);
-        zc.addResultaatAttribuut(ra);
-
-        return zc;
+    private void printResultsToLog(List resultaten){
+        log.info("Er zijn "+resultaten.size()+" resultaten gevonden:");
+        for (int i=0; i < resultaten.size(); i++){
+            ZoekResultaat zr=(ZoekResultaat) resultaten.get(i);
+            log.info(zr.getLabel());
+        }
     }
+       
     public static void main (String[] args) throws Exception{        
         ZoekerTest test = new ZoekerTest();
         test.setUp();
-        test.searchWithGeom();
+        test.searchWith2LikeFilters();
     }
 }

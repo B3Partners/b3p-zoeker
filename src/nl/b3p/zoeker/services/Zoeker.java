@@ -9,12 +9,13 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.PrecisionModel;
 import com.vividsolutions.jts.io.WKTReader;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.Locale;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
@@ -36,7 +37,6 @@ import org.geotools.data.ows.WFSCapabilities;
 import org.geotools.data.postgis.PostgisDataStoreFactory;
 import org.geotools.data.wfs.WFSDataStoreFactory;
 import org.geotools.data.wfs.v1_0_0.WFS_1_0_0_DataStore;
-import org.geotools.data.wfs.v1_1_0.WFS_1_1_0_DataStore;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.GeoTools;
 import org.geotools.feature.FeatureCollection;
@@ -56,6 +56,7 @@ public class Zoeker {
     private static final int topMaxResults = 1000;
     private static final Log log = LogFactory.getLog(Zoeker.class);
     private static final int TIMEOUT = 60000;
+    private static final SimpleDateFormat sdf=new SimpleDateFormat("dd-MM-yyyy",new Locale("NL"));
 
     public List zoek(Integer[] zoekConfiguratieIds, String searchStrings[], Integer maxResults) {        
         List results = new ArrayList();
@@ -137,30 +138,24 @@ public class Zoeker {
                     Iterator it = zc.getZoekVelden().iterator();
                     List filters = new ArrayList();
                     
-                    //omdat het and WFS filter het niet doet kan je maar 1 filter meegegeven:
-                    //for(int i=0; it.hasNext(); i++){
-                    //de filterIndex geeft aan welk filter is meegezonden met het verzoek.
-                    int filterIndex = -1;
+                    //maak de filters
+
                     ArrayList properties = new ArrayList();
-                    for (int i = 0; it.hasNext() && filterIndex == -1; i++) {
+                    for (int i = 0; it.hasNext(); i++) {
                         ZoekAttribuut zoekVeld = (ZoekAttribuut) it.next();
                         Filter filter= createFilter(ZoekAttribuut.setToZoekVeldenArray(zc.getZoekVelden()),searchStrings,i,ds,ff);
                         if (filter!=null){
-                            filters.add(filter);
-                            if (ds instanceof WFS_1_0_0_DataStore || ds instanceof WFS_1_1_0_DataStore) {
-                                filterIndex=i;
-                            }
+                            filters.add(filter);                            
                         }
-                        //omdat het filter niet goed werkt moeten we met de hand controleren maar dan
-                        //moeten we wel de bevraagde attributen ophalen                        
-                        properties.add(zoekVeld.getAttribuutLocalnaam());
                     }
+                    //maak een and filter of een single filter aan de hand van het aantal filters
                     Filter filter = null;
                     if (filters.size() == 1) {
                         filter = (Filter) filters.get(0);
                     } else {
                         filter = ff.and(filters);
                     }
+                    //maak de query met de maxResults
                     DefaultQuery query;
                     if (filters.size() == 0) {
                         query = new DefaultQuery(zc.getFeatureType());
@@ -181,66 +176,43 @@ public class Zoeker {
                         }
                     }
                     query.setPropertyNames(properties);
-                    //maak reader aan.
-                    //DefaultFeatureResults fresults = (DefaultFeatureResults) fs.getFeatures(query);
+                    //Haal de featureCollection met de query op.
                     fc = fs.getFeatures(query);
-                    //reader = fresults.reader();
+                    //Maak de FeatureIterator aan (hier wordt het daad werkelijke verzoek gedaan.
                     fi=fc.features();
+                    //doorloop de features en maak de resultaten.
                     while (fi.hasNext()) {
-                        Feature f = fi.next();
-                        Iterator zit = zc.getZoekVelden().iterator();
-                        boolean tonen = true;
-                        //De overige properties controleren voor een wfs filter.
-                        if (ds instanceof WFS_1_0_0_DataStore || ds instanceof WFS_1_1_0_DataStore) {
-                            for (int i = 0; zit.hasNext() && tonen; i++) {
-                                ZoekAttribuut zak = (ZoekAttribuut) zit.next();
-                                if (zak.isFilterMogelijk()){
-                                    if (i == filterIndex) {//is al gechecked met het ophalen dus hoeft niet nog een keer gechecked te worden.
-                                    } else if (searchStrings[i] == null || searchStrings[i].length() == 0) {
-                                        //als searchstrings leeg is dan ook niet controleren.
-                                    } else {
-                                        if (f.getProperty(zak.getAttribuutLocalnaam()) == null) {
-                                            tonen = false;
-                                        } else if (f.getProperty(zak.getAttribuutLocalnaam()).getValue() == null) {
-                                            tonen = false;
-                                        } else if (!f.getProperty(zak.getAttribuutLocalnaam()).getValue().toString().matches(searchStrings[i])) {
-                                            tonen = false;
-                                        }
-                                    }
+                        Feature f = fi.next();                        
+                        ZoekResultaat p = new ZoekResultaat();
+                        Iterator rit = zc.getResultaatVelden().iterator();
+                        while (rit.hasNext()) {
+                            ResultaatAttribuut ra = (ResultaatAttribuut) rit.next();
+                            if (f.getProperty(ra.getAttribuutLocalnaam()) != null) {
+                                String value = null;
+                                if (f.getProperty(ra.getAttribuutLocalnaam()).getValue() != null) {
+                                    value = f.getProperty(ra.getAttribuutLocalnaam()).getValue().toString();
                                 }
+                                ZoekResultaatAttribuut zra = new ZoekResultaatAttribuut(ra);
+                                zra.setWaarde(value);
+                                p.addAttribuut(zra);
+                                p.setZoekConfiguratie(zc);
+                            } else {
+                                String attrTypes = "";
+                                Iterator pi = f.getProperties().iterator();
+                                while (pi.hasNext()) {
+                                    Property pr = (Property) pi.next();
+                                    attrTypes += pr.getType().getName().getLocalPart() + " ";
+                                }
+                                log.debug("Attribuut: " + ra.toString() + " niet gevonden. Mogelijke attributen: " + attrTypes);
                             }
                         }
-                        if (tonen) {
-                            ZoekResultaat p = new ZoekResultaat();
-                            Iterator rit = zc.getResultaatVelden().iterator();
-                            while (rit.hasNext()) {
-                                ResultaatAttribuut ra = (ResultaatAttribuut) rit.next();
-                                if (f.getProperty(ra.getAttribuutLocalnaam()) != null) {
-                                    String value = null;
-                                    if (f.getProperty(ra.getAttribuutLocalnaam()).getValue() != null) {
-                                        value = f.getProperty(ra.getAttribuutLocalnaam()).getValue().toString();
-                                    }
-                                    ZoekResultaatAttribuut zra = new ZoekResultaatAttribuut(ra);
-                                    zra.setWaarde(value);
-                                    p.addAttribuut(zra);
-                                    p.setZoekConfiguratie(zc);
-                                } else {
-                                    String attrTypes = "";
-                                    Iterator pi = f.getProperties().iterator();
-                                    while (pi.hasNext()) {
-                                        Property pr = (Property) pi.next();
-                                        attrTypes += pr.getType().getName().getLocalPart() + " ";
-                                    }
-                                    log.debug("Attribuut: " + ra.toString() + " niet gevonden. Mogelijke attributen: " + attrTypes);
-                                }
-                            }
-                            if (f.getType().getGeometryDescriptor() != null && f.getDefaultGeometryProperty() != null && f.getDefaultGeometryProperty().getBounds() != null) {
-                                p.setBbox(f.getDefaultGeometryProperty().getBounds());
-                            }
-                            if (!zoekResultaten.contains(p)) {
-                                zoekResultaten.add(p);
-                            }
+                        if (f.getType().getGeometryDescriptor() != null && f.getDefaultGeometryProperty() != null && f.getDefaultGeometryProperty().getBounds() != null) {
+                            p.setBbox(f.getDefaultGeometryProperty().getBounds());
                         }
+                        if (!zoekResultaten.contains(p)) {
+                            zoekResultaten.add(p);
+                        }
+                        
                     }
                 } catch (SchemaNotFoundException snfe) {
                     String typenames = "";
@@ -416,17 +388,21 @@ public class Zoeker {
                             double straal=Double.parseDouble(searchStrings[i]);
                             geom=geom.buffer(straal);
                         }catch(NumberFormatException nfe){
-                            log.error("Ingevulde zoekopdracht "+zoekVelden[i].getNaam()+ "moet een nummer zijn");
+                            log.error("Ingevulde zoekopdracht "+zoekVelden[i].getNaam()+ "moet een nummer zijn",nfe);
                         }
                     }
                 }
-                filter=ff.within(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(geom));                
+                filter=ff.within(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(geom));
             }catch(Exception e){
                 log.error("Fout bij parsen wkt geometry");
             }
+        }else if (zoekVeld.getType().intValue()==Attribuut.GROTER_DAN_TYPE){            
+            filter=ff.greaterOrEqual(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString));
+        }else if (zoekVeld.getType().intValue()==Attribuut.KLEINER_DAN_TYPE){            
+            filter=ff.lessOrEqual(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString));
         }else if (zoekVeld.isFilterMogelijk()){
             if (ds instanceof WFS_1_0_0_DataStore) {
-                filter=ff.equal(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString), false);
+                filter=ff.like(ff.property(zoekVeld.getAttribuutnaam()),  "*"+searchString+"*");
             } else {
                 if (searchString.length() > 0) {
                     filter=ff.like(ff.property(zoekVeld.getAttribuutLocalnaam()), "*"+searchString+"*");
