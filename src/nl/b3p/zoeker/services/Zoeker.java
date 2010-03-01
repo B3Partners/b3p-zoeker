@@ -9,6 +9,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.PrecisionModel;
 import com.vividsolutions.jts.io.WKTReader;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,6 +45,7 @@ import org.geotools.feature.FeatureIterator;
 import org.geotools.filter.FilterCapabilities;
 import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
+import org.opengis.feature.type.FeatureType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
 
@@ -143,7 +145,7 @@ public class Zoeker {
                     ArrayList properties = new ArrayList();
                     for (int i = 0; it.hasNext(); i++) {
                         ZoekAttribuut zoekVeld = (ZoekAttribuut) it.next();
-                        Filter filter= createFilter(ZoekAttribuut.setToZoekVeldenArray(zc.getZoekVelden()),searchStrings,i,ds,ff);
+                        Filter filter= createFilter(ZoekAttribuut.setToZoekVeldenArray(zc.getZoekVelden()),searchStrings,i,ds,ff,fs.getSchema());
                         if (filter!=null){
                             filters.add(filter);                            
                         }
@@ -369,7 +371,7 @@ public class Zoeker {
      * Maakt het filter voor het zoekveld met als value het zoek criterium.
      * Geef de alle zoekvelden mee en alle ingevulde strings omdat sommige zoekvelden afhankelijk kunnen zijn van elkaar.
      */
-    private Filter createFilter(ZoekAttribuut[] zoekVelden, String[] searchStrings, int index, DataStore ds,FilterFactory2 ff) throws Exception {
+    private Filter createFilter(ZoekAttribuut[] zoekVelden, String[] searchStrings, int index, DataStore ds,FilterFactory2 ff, FeatureType ft) throws Exception {
         String searchString=searchStrings[index];
         ZoekAttribuut zoekVeld=zoekVelden[index];
         Filter filter=null;
@@ -401,11 +403,17 @@ public class Zoeker {
         }else if (zoekVeld.getType().intValue()==Attribuut.KLEINER_DAN_TYPE){            
             filter=ff.lessOrEqual(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString));
         }else if (zoekVeld.isFilterMogelijk()){
+            String wildeSearchString=null;
+            if(ft.getDescriptor(zoekVeld.getAttribuutnaam()).getType().getBinding()==Integer.class || ft.getDescriptor(zoekVeld.getAttribuutnaam()).getType().getBinding()==Double.class || ft.getDescriptor(zoekVeld.getAttribuutnaam()).getType().getBinding()==BigInteger.class){
+                wildeSearchString=searchString;
+            }else{
+                wildeSearchString="*"+searchString+"*";
+            }
             if (ds instanceof WFS_1_0_0_DataStore) {
-                filter=ff.like(ff.property(zoekVeld.getAttribuutnaam()),  "*"+searchString+"*");
+                filter=ff.like(ff.property(zoekVeld.getAttribuutnaam()), wildeSearchString);
             } else {
                 if (searchString.length() > 0) {
-                    filter=ff.like(ff.property(zoekVeld.getAttribuutLocalnaam()), "*"+searchString+"*");
+                    filter=ff.like(ff.property(zoekVeld.getAttribuutLocalnaam()), wildeSearchString);
                 }
             }
         }
