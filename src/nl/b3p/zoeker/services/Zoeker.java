@@ -48,6 +48,7 @@ import org.opengis.feature.Property;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
+import org.opengis.filter.expression.Expression;
 
 /**
  *
@@ -413,7 +414,7 @@ public class Zoeker {
                 filter=ff.like(ff.property(zoekVeld.getAttribuutnaam()), wildeSearchString);
             } else {
                 if (searchString.length() > 0) {
-                    filter=ff.like(ff.property(zoekVeld.getAttribuutLocalnaam()), wildeSearchString);
+                    filter=ff.like( ff.property(zoekVeld.getAttribuutnaam()),wildeSearchString, "*", "?", "\\", false);
                 }
             }
         }
