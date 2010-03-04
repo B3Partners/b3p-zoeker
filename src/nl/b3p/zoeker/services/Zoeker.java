@@ -411,10 +411,18 @@ public class Zoeker {
                 wildeSearchString="*"+searchString+"*";
             }
             if (ds instanceof WFS_1_0_0_DataStore) {
-                filter=ff.like(ff.property(zoekVeld.getAttribuutnaam()), wildeSearchString);
+                if(ft.getDescriptor(zoekVeld.getAttribuutnaam()).getType().getBinding()==Integer.class || ft.getDescriptor(zoekVeld.getAttribuutnaam()).getType().getBinding()==Double.class || ft.getDescriptor(zoekVeld.getAttribuutnaam()).getType().getBinding()==BigInteger.class){
+                    filter=ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(wildeSearchString));
+                }else{
+                    filter=ff.like(ff.property(zoekVeld.getAttribuutnaam()), wildeSearchString);
+                }
             } else {
                 if (searchString.length() > 0) {
-                    filter=ff.like( ff.property(zoekVeld.getAttribuutnaam()),wildeSearchString, "*", "?", "\\", false);
+                    if(ft.getDescriptor(zoekVeld.getAttribuutnaam()).getType().getBinding()==Integer.class || ft.getDescriptor(zoekVeld.getAttribuutnaam()).getType().getBinding()==Double.class || ft.getDescriptor(zoekVeld.getAttribuutnaam()).getType().getBinding()==BigInteger.class){
+                        filter=ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(wildeSearchString));
+                    }else{
+                        filter=ff.like( ff.property(zoekVeld.getAttribuutnaam()),wildeSearchString, "*", "?", "\\", false);
+                    }
                 }
             }
         }
