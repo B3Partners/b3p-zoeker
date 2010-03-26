@@ -70,12 +70,16 @@ public class Zoeker {
             EntityTransaction tx = em.getTransaction();
             tx.begin();
             try {
+                String queryString="from ZoekConfiguratie z where z.id IN (";
                 for (int i = 0; i < zoekConfiguratieIds.length; i++) {
-                    ZoekConfiguratie zc = null;
-                    try {
-                        zc = (ZoekConfiguratie) em.createQuery("from ZoekConfiguratie z where z.id = :id").setParameter("id", zoekConfiguratieIds[i]).getSingleResult();
-                    } catch (NoResultException nre) {
-                    }
+                    if (i!=0)
+                        queryString+=",";
+                    queryString+=zoekConfiguratieIds[i];
+                }
+                queryString+=") order by z.parentBron.volgorde";
+                List zoekconfiguraties=em.createQuery(queryString).getResultList();
+                for (int i = 0; i < zoekconfiguraties.size(); i++) {
+                    ZoekConfiguratie zc = (ZoekConfiguratie) zoekconfiguraties.get(i);
                     results = zoekMetConfiguratie(zc, searchStrings, maxResults, results);
                 }
                 tx.commit();
