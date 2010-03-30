@@ -46,6 +46,7 @@ import org.geotools.filter.FilterCapabilities;
 import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
 import org.opengis.feature.type.FeatureType;
+import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.expression.Expression;
@@ -409,20 +410,20 @@ public class Zoeker {
             filter=ff.lessOrEqual(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString));
         }else if (zoekVeld.isFilterMogelijk()){
             String wildeSearchString=null;
-            if(ft.getDescriptor(zoekVeld.getAttribuutnaam()).getType().getBinding()==Integer.class || ft.getDescriptor(zoekVeld.getAttribuutnaam()).getType().getBinding()==Double.class || ft.getDescriptor(zoekVeld.getAttribuutnaam()).getType().getBinding()==BigInteger.class){
+            if(propertyIsNumber(ft.getDescriptor(zoekVeld.getAttribuutnaam()))){
                 wildeSearchString=searchString;
             }else{
                 wildeSearchString="*"+searchString+"*";
             }
             if (ds instanceof WFS_1_0_0_DataStore) {
-                if(ft.getDescriptor(zoekVeld.getAttribuutnaam()).getType().getBinding()==Integer.class || ft.getDescriptor(zoekVeld.getAttribuutnaam()).getType().getBinding()==Double.class || ft.getDescriptor(zoekVeld.getAttribuutnaam()).getType().getBinding()==BigInteger.class){
+                if(propertyIsNumber(ft.getDescriptor(zoekVeld.getAttribuutnaam()))){
                     filter=ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(wildeSearchString));
                 }else{
                     filter=ff.like(ff.property(zoekVeld.getAttribuutnaam()), wildeSearchString);
                 }
             } else {
                 if (searchString.length() > 0) {
-                    if(ft.getDescriptor(zoekVeld.getAttribuutnaam()).getType().getBinding()==Integer.class || ft.getDescriptor(zoekVeld.getAttribuutnaam()).getType().getBinding()==Double.class || ft.getDescriptor(zoekVeld.getAttribuutnaam()).getType().getBinding()==BigInteger.class){
+                    if(propertyIsNumber(ft.getDescriptor(zoekVeld.getAttribuutnaam()))){
                         filter=ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(wildeSearchString));
                     }else{
                         filter=ff.like( ff.property(zoekVeld.getAttribuutnaam()),wildeSearchString, "*", "?", "\\", false);
@@ -431,5 +432,14 @@ public class Zoeker {
             }
         }
         return filter;
+    }
+
+    private boolean propertyIsNumber(PropertyDescriptor descriptor) {
+        if (descriptor==null || descriptor.getType()==null || descriptor.getType().getBinding()==null)
+            return false;
+        if (descriptor.getType().getBinding()==Integer.class || descriptor.getType().getBinding()==Double.class || descriptor.getType().getBinding()==BigInteger.class){
+            return true;
+        }
+        return false;
     }
 }
