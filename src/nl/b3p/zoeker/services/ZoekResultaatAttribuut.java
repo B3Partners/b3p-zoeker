@@ -13,7 +13,7 @@ import nl.b3p.zoeker.configuratie.ResultaatAttribuut;
  * @author Roy
  */
 public class ZoekResultaatAttribuut extends Attribuut{
-    private String waarde=null;
+    private Object waarde=null;
 
     public ZoekResultaatAttribuut(ResultaatAttribuut ra) {
         super(ra);
@@ -22,14 +22,14 @@ public class ZoekResultaatAttribuut extends Attribuut{
     /**
      * @return the waarde
      */
-    public String getWaarde() {
+    public Object getWaarde() {
         return waarde;
     }
 
     /**
      * @param waarde the waarde to set
      */
-    public void setWaarde(String waarde) {
+    public void setWaarde(Object waarde) {
         this.waarde = waarde;
     }
 }

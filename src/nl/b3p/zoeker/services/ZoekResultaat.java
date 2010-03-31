@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package nl.b3p.zoeker.services;
 
 import java.util.ArrayList;
@@ -15,11 +14,12 @@ import org.opengis.geometry.BoundingBox;
 /**
  * @author Roy
  */
-public class ZoekResultaat implements Comparable{
+public class ZoekResultaat implements Comparable {
+
     private static final Log log = LogFactory.getLog(ZoekResultaat.class);
-    private ArrayList attributen=null;
-    private Integer zoekConfigId=null;
-    private ZoekConfiguratie zoekConfiguratie=null;
+    private ArrayList<ZoekResultaatAttribuut> attributen = null;
+    private Integer zoekConfigId = null;
+    private ZoekConfiguratie zoekConfiguratie = null;
     private double maxx;
     private double maxy;
     private double minx;
@@ -85,18 +85,16 @@ public class ZoekResultaat implements Comparable{
      * @return the zoekConfigId
      */
     public Integer getZoekConfigId() {
-        if (getZoekConfiguratie()!=null){
+        if (getZoekConfiguratie() != null) {
             return getZoekConfiguratie().getId();
         }
         return null;
     }
 
-    
-
     /**
      * @return the attributen
      */
-    public ArrayList getAttributen() {
+    public ArrayList<ZoekResultaatAttribuut> getAttributen() {
         return attributen;
     }
 
@@ -106,16 +104,18 @@ public class ZoekResultaat implements Comparable{
     public void setAttributen(ArrayList attributen) {
         this.attributen = attributen;
     }
+
     /** Voeg een attribuut toe
      */
     void addAttribuut(ZoekResultaatAttribuut o) {
-        if (getAttributen()==null){
+        if (getAttributen() == null) {
             setAttributen(new ArrayList());
         }
         attributen.add(o);
     }
+
     /**
-     Set the bbox
+    Set the bbox
      */
     void setBbox(BoundingBox bounds) {
         this.setMaxx(bounds.getMaxX());
@@ -128,69 +128,113 @@ public class ZoekResultaat implements Comparable{
      * @return de waarde van het zoekresultaatattribuut met type id (mag er maar 1 zijn)
      */
     public String getId() {
-        ArrayList waarden=getWaarden(Attribuut.ID_TYPE);
-        if (waarden.size()==0){            
+        ArrayList waarden = getWaarden(Attribuut.ID_TYPE);
+        if (waarden.size() == 0) {
             return null;
-        }else if (waarden.size()>1){
+        } else if (waarden.size() > 1) {
             log.error("Meerdere resultaat attributen geconfigureerd met type ID, dit mag er maar 1 zijn. De eerste wordt gebruikt");
         }
-        return (String) waarden.get(0);
-        
+        return waarden.get(0).toString();
+
     }
-    public ArrayList getExtraAttribuutWaarden(){
+
+    public ArrayList getExtraAttribuutWaarden() {
         return getWaarden(Attribuut.GEEN_TYPE);
     }
+
     /**
      * @return alle waarden van de attributen met TOON_TYPE aan elkaar gescheiden door een " "
      */
-    public String getLabel(){
-        String resultValue="";
-        ArrayList waarden=getWaarden(Attribuut.TOON_TYPE);
-        for (int i=0; i < waarden.size(); i++){
-            if (resultValue.length()>0)
-                    resultValue+=" ";
-            if (waarden.get(i)!=null){
-                resultValue+=waarden.get(i);
+    public String getLabel() {
+        String resultValue = "";
+        ArrayList waarden = getWaarden(Attribuut.TOON_TYPE);
+        for (int i = 0; i < waarden.size(); i++) {
+            if (resultValue.length() > 0) {
+                resultValue += " ";
             }
-        }       
+            if (waarden.get(i) != null) {
+                resultValue += waarden.get(i).toString();
+            }
+        }
         return resultValue;
     }
+
     /**
      * Geeft een list met waarden(string) terug van alle zoekresultaatattributen met het meegegeven type.
      */
-    private ArrayList getWaarden(int type){
-        ArrayList returnValue=new ArrayList();
-        if (getAttributen()!=null){            
-            for (int i=0; i < getAttributen().size(); i++){
-                ZoekResultaatAttribuut a=(ZoekResultaatAttribuut) getAttributen().get(i);
-                if (a.getType()!=null && a.getType()==type)
+    private ArrayList getWaarden(int type) {
+        ArrayList returnValue = new ArrayList();
+        if (getAttributen() != null) {
+            for (int i = 0; i < getAttributen().size(); i++) {
+                ZoekResultaatAttribuut a = (ZoekResultaatAttribuut) getAttributen().get(i);
+                if (a.getType() != null && a.getType() == type) {
                     returnValue.add(a.getWaarde());
+                }
             }
         }
         return returnValue;
     }
 
     @Override
-    public boolean equals(Object o){
-        if (o instanceof ZoekResultaat){
-            ZoekResultaat z= (ZoekResultaat)o;
-            if (this.getId()!=null && z.getId()!=null){
+    public boolean equals(Object o) {
+        if (o instanceof ZoekResultaat) {
+            ZoekResultaat z = (ZoekResultaat) o;
+            if (this.getId() != null && z.getId() != null) {
                 return this.getId().equals(z.getId());
             }
         }
         return false;
     }
-
+    /**
+     * Compares o with this zoekresultaat
+     * @param o see compare interface
+     * @return see compare interface
+     */
     public int compareTo(Object o) {
-        if (!(o instanceof ZoekResultaat)){
+        //if not instance of zoekresultaat this wins.
+        if (!(o instanceof ZoekResultaat)) {
             return 1;
-        }else{
-           if (((ZoekResultaat)o).getLabel()==null){
-               return 1;
-           }if (this.getLabel()==null){
-               return -1;
-           }
-           return this.getLabel().compareTo(((ZoekResultaat)o).getLabel());
+        } else {            
+            ZoekResultaat zoekResultaat = (ZoekResultaat) o;
+            ArrayList<ZoekResultaatAttribuut> zAttributen = zoekResultaat.getAttributen();
+            int compareResult = 0;
+            //walk over all attributes and compare the attributes with type = 'TOON_TYPE';
+            for (int i = 0; i < this.attributen.size() && compareResult == 0; i++) {
+                ZoekResultaatAttribuut thisZra = this.attributen.get(i);
+                //only compare if type = TOON_TYPE (these will be displayed)
+                if (thisZra.getType().equals(Attribuut.TOON_TYPE)) {
+                    for (int z = 0; z < zAttributen.size(); z++) {
+                        ZoekResultaatAttribuut zra = zAttributen.get(z);
+                        //if the names are the same do a compare
+                        if (thisZra.getAttribuutnaam() != null && zra.getAttribuutnaam() != null && thisZra.getAttribuutnaam().equals(zra.getAttribuutnaam())) {
+                            if (thisZra.getWaarde() == null) {
+                                compareResult = -1;
+                            } else if (zra.getWaarde() == null) {
+                                compareResult = 1;
+                            } else if (thisZra.getWaarde() instanceof Comparable) {
+                                //most services give the numbers in string format. Try to numberFormat the strings and then compare
+                                boolean NaN = false;
+                                if (thisZra.getWaarde() instanceof String && zra.getWaarde() instanceof String){
+                                    try {
+                                        Double thisD = new Double(thisZra.getWaarde().toString());
+                                        Double d = new Double(zra.getWaarde().toString());
+                                        compareResult = thisD.compareTo(d);
+                                    } catch (NumberFormatException nfe) {
+                                        NaN = true;
+                                    }
+                                }
+                                if (NaN) {
+                                    compareResult = ((Comparable) thisZra.getWaarde()).compareTo(zra.getWaarde());
+                                }
+                            } else {
+                                compareResult = thisZra.getWaarde().toString().compareToIgnoreCase(zra.getWaarde().toString());
+                            }
+                            continue;
+                        }
+                    }
+                }
+            }
+            return compareResult;
         }
     }
 

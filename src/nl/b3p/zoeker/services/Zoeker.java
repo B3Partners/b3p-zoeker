@@ -63,7 +63,7 @@ public class Zoeker {
     private static final SimpleDateFormat sdf=new SimpleDateFormat("dd-MM-yyyy",new Locale("NL"));
 
     public List zoek(Integer[] zoekConfiguratieIds, String searchStrings[], Integer maxResults) {        
-        List results = new ArrayList();
+        List<ZoekResultaat> results = new ArrayList();
         Object identity = null;
         try {
             identity = MyEMFDatabase.createEntityManager(MyEMFDatabase.MAIN_EM);
@@ -110,7 +110,7 @@ public class Zoeker {
      * @param maxResults: Het maximaal aantal resultaten dat getoond moeten worden.
      * @param results: De al gevonden resultaten (de nieuwe resultaten worden hier aan toegevoegd.
      */
-    public List<ZoekResultaat> zoekMetConfiguratie(ZoekConfiguratie zc, String[] searchStrings, Integer maxResults, List results) {
+    public List<ZoekResultaat> zoekMetConfiguratie(ZoekConfiguratie zc, String[] searchStrings, Integer maxResults, List<ZoekResultaat> results) {
         if (maxResults == null || maxResults.intValue() == 0 || maxResults.intValue() > topMaxResults) {
             maxResults = topMaxResults;
         }
@@ -118,7 +118,7 @@ public class Zoeker {
             return results;
         }
         Bron bron = zc.getBron();
-        ArrayList zoekResultaten = new ArrayList(results);
+        ArrayList<ZoekResultaat> zoekResultaten = new ArrayList(results);
         DataStore ds = null;
         try {
             ds = getDataStore(bron);
@@ -196,10 +196,7 @@ public class Zoeker {
                         while (rit.hasNext()) {
                             ResultaatAttribuut ra = (ResultaatAttribuut) rit.next();
                             if (f.getProperty(ra.getAttribuutLocalnaam()) != null) {
-                                String value = null;
-                                if (f.getProperty(ra.getAttribuutLocalnaam()).getValue() != null) {
-                                    value = f.getProperty(ra.getAttribuutLocalnaam()).getValue().toString();
-                                }
+                                Object value = f.getProperty(ra.getAttribuutLocalnaam()).getValue();
                                 ZoekResultaatAttribuut zra = new ZoekResultaatAttribuut(ra);
                                 zra.setWaarde(value);
                                 p.addAttribuut(zra);
