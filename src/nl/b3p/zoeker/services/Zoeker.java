@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Locale;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
-import javax.persistence.NoResultException;
 import nl.b3p.zoeker.configuratie.Attribuut;
 import nl.b3p.zoeker.configuratie.Bron;
 import nl.b3p.zoeker.configuratie.ResultaatAttribuut;
@@ -49,7 +48,6 @@ import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
-import org.opengis.filter.expression.Expression;
 
 /**
  *
@@ -213,6 +211,8 @@ public class Zoeker {
                         }
                         if (f.getType().getGeometryDescriptor() != null && f.getDefaultGeometryProperty() != null && f.getDefaultGeometryProperty().getBounds() != null) {
                             p.setBbox(f.getDefaultGeometryProperty().getBounds());
+                        }else{
+                            log.debug("Can't set Bbox for result. No bounds set for feature by the server. And no Geometry given or configured as result in the search configuration");
                         }
                         if (!zoekResultaten.contains(p)) {
                             zoekResultaten.add(p);
@@ -228,7 +228,7 @@ public class Zoeker {
                         }
                         typenames += tn[i];
                     }
-                    log.error("Feature niet bekend bij bron, mogelijke features: " + typenames, snfe);
+                    log.error("Feature "+zc.getFeatureType()+" niet bekend bij bron, mogelijke features: " + typenames, snfe);
                 } catch (Exception e) {
                     log.error("Fout bij laden plannen: ", e);
                 } finally {

@@ -110,6 +110,21 @@ public class ZoekerTest{
         List resultaten= zoeker.zoekMetConfiguratie(zc, new String[]{arnhemWKT}, 10000, new ArrayList());
         printResultsToLog(resultaten);        
     }
+    
+    @Test
+    public void searchWithGeomArcWFS(){
+        //test op roonline deegree wfs
+        Bron bron = new Bron(1,"arnhem","http://geo.arnhem.nl/ArcGIS/services/Binnenstad_WFS/MapServer/WFSServer?Version=1.0.0");
+        ZoekConfiguratie zc = new ZoekConfiguratie(null,"winkels op geometry","FLAM_BINN_WINKEL_HORECA",bron,null);
+
+        ZoekAttribuut za = new ZoekAttribuut(null,"op SHAPE","SHAPE", "SHAPE",3,null);
+        ResultaatAttribuut ra = new ResultaatAttribuut(null,"NAAM","NAAM","NAAM",2,null);
+
+        zc.addZoekAttribuut(za);
+        zc.addResultaatAttribuut(ra);
+        List resultaten= zoeker.zoekMetConfiguratie(zc, new String[]{arnhemWKT}, 10000, new ArrayList());
+        printResultsToLog(resultaten);
+    }
 
     @Test
     public void searchWithStringPostgis(){
@@ -175,6 +190,22 @@ public class ZoekerTest{
         Collections.sort(resultaten);
         printResultsToLog(resultaten);
     }
+    
+    public void testEsriService9_3() {
+        //test op kaartenbalie public mapserver wfs
+        Bron bron = new Bron(1,"Arnhem WFS","http://www.geo.arnhem.nl/ArcGIS/services/Totaal_WFS/MapServer/WFSServer?Version=1.0.0");
+        ZoekConfiguratie zc = new ZoekConfiguratie(null,"Wijk zoeken","Totaal_WFS:GIGA_GRNS_WIJKEN",bron,null);
+
+        ZoekAttribuut za = new ZoekAttribuut(null,"WIJKNAAM","WIJKNAAM", "WIJKNAAM",Attribuut.GEEN_TYPE,2);
+        ResultaatAttribuut ra = new ResultaatAttribuut(null,"WIJKNAAM","WIJKNAAM","WIJKNAAM",Attribuut.TOON_TYPE,1);
+        
+        zc.addZoekAttribuut(za);
+        zc.addResultaatAttribuut(ra);
+        
+        List resultaten= zoeker.zoekMetConfiguratie(zc, new String[]{"Schaarsbergen"}, 100, new ArrayList());
+        Collections.sort(resultaten);
+        printResultsToLog(resultaten);
+    }
     private void printResultsToLog(List resultaten){
         log.info("Er zijn "+resultaten.size()+" resultaten gevonden:");
         for (int i=0; i < resultaten.size(); i++){
@@ -189,16 +220,22 @@ public class ZoekerTest{
         test.searchWith2LikeFilters();
         //test.searchWithStringPostgis();
         test.compare();*/
-        doFullTest();
+        test.setUp();
+        test.testEsriService9_3();
+        //doFullTest();
+
     }
     public static void doFullTest() throws Exception{
         ZoekerTest test = new ZoekerTest();
         test.setUp();
         test.searchWithGeomDeegree();
         test.searchWithGeomMapserver();
+        test.searchWithGeomArcWFS();
         test.searchWithStringPostgis();
         test.searchWith2LikeFilters();
         test.searchWithLessGreater();
         test.compare();
     }
+
+
 }
