@@ -283,7 +283,7 @@ public class Zoeker {
      * @throws java.io.IOException
      */
     //jdbc:postgresql://localhost:5432/edamvolendam_gis
-    public DataStore getDataStore(Bron b) throws IOException {
+    public static DataStore getDataStore(Bron b) throws IOException {
         if (b.getUrl() == null) {
             return null;
         }

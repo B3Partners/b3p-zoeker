@@ -35,7 +35,7 @@ public class ZoekConfiguratie {
     // bron
     private Bron parentBron=null;
 
-    public ZoekConfiguratie(){
+        public ZoekConfiguratie(){
     
     }
     public ZoekConfiguratie(Integer id, String naam, String featureType, Bron parentBron, ZoekConfiguratie parentZoekConfiguratie){
@@ -221,5 +221,15 @@ public class ZoekConfiguratie {
         }
         return json;
 
+    }
+
+    public String toString(){
+        String returnValue="";
+        returnValue+=getId()+". ";
+        if (getNaam()!=null)
+            returnValue+=getNaam()+" ";
+        if (getFeatureType()!=null)
+            returnValue+=getFeatureType();
+        return returnValue;
     }
 }

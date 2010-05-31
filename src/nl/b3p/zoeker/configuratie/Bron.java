@@ -126,4 +126,15 @@ public class Bron {
         json.put("volgorde", getVolgorde());
         return json;
     }
+
+    public String toString(){
+        String returnValue="";
+        returnValue+=getId();
+        returnValue+=". ";
+        if (getNaam()!=null)
+            returnValue+=getNaam()+" ";
+        if (getUrl()!=null)
+        returnValue+="("+getUrl()+")";
+        return returnValue;
+    }
 }
