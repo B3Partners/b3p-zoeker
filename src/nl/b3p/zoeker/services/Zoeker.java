@@ -145,7 +145,12 @@ public class Zoeker {
                     List filters = new ArrayList();
                     
                     //maak de filters
-
+                    try{
+                        fs.getSchema();
+                    }catch (NullPointerException npe){
+                        log.error("Kan het schema voor de zoekconfiguratie niet ophalen",npe);
+                        throw npe;
+                    }
                     ArrayList properties = new ArrayList();
                     for (int i = 0; it.hasNext(); i++) {
                         ZoekAttribuut zoekVeld = (ZoekAttribuut) it.next();
@@ -399,7 +404,7 @@ public class Zoeker {
                 }
                 filter=ff.within(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(geom));
             }catch(Exception e){
-                log.error("Fout bij parsen wkt geometry");
+                log.error("Fout bij parsen wkt geometry",e);
             }
         }else if (zoekVeld.getType().intValue()==Attribuut.GROTER_DAN_TYPE){            
             filter=ff.greaterOrEqual(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString));

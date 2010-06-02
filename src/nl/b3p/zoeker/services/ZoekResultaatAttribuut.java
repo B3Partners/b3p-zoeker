@@ -5,6 +5,7 @@
 
 package nl.b3p.zoeker.services;
 
+import com.vividsolutions.jts.geom.Geometry;
 import nl.b3p.zoeker.configuratie.Attribuut;
 import nl.b3p.zoeker.configuratie.ResultaatAttribuut;
 
@@ -30,6 +31,14 @@ public class ZoekResultaatAttribuut extends Attribuut{
      * @param waarde the waarde to set
      */
     public void setWaarde(Object waarde) {
-        this.waarde = waarde;
+        /* Als de waarde van het type geometry is dan omzetten naar een string.
+         * Dit is omdat anders DWR het niet snapt zonder converter te defineren en dus een NULL object
+         * terug geeft aan het javascript.
+        */
+        if (waarde instanceof Geometry){
+            this.waarde=((Geometry)waarde).toText();
+        }else{
+            this.waarde = waarde;
+        }
     }
 }
