@@ -225,11 +225,13 @@ public class ZoekConfiguratie {
 
     public String toString(){
         String returnValue="";
-        returnValue+=getId()+". ";
         if (getNaam()!=null)
             returnValue+=getNaam()+" ";
         if (getFeatureType()!=null)
             returnValue+=getFeatureType();
+        if (getBron()!=null){
+            returnValue+=" Bron: "+getBron().toString();
+        }
         return returnValue;
     }
 }

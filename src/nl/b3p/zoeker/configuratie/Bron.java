@@ -129,12 +129,10 @@ public class Bron {
 
     public String toString(){
         String returnValue="";
-        returnValue+=getId();
-        returnValue+=". ";
         if (getNaam()!=null)
             returnValue+=getNaam()+" ";
         if (getUrl()!=null)
-        returnValue+="("+getUrl()+")";
+            returnValue+="("+getUrl()+")";
         return returnValue;
     }
 }
