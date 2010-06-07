@@ -381,6 +381,8 @@ public class Zoeker {
      */
     private Filter createFilter(ZoekAttribuut[] zoekVelden, String[] searchStrings, int index, DataStore ds,FilterFactory2 ff, FeatureType ft) throws Exception {
         String searchString=searchStrings[index];
+        if (searchString==null || searchString.length()==0)
+            return null;
         ZoekAttribuut zoekVeld=zoekVelden[index];
         Filter filter=null;
         if(zoekVeld.getType()==Attribuut.GEOMETRY_TYPE){
