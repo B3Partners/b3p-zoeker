@@ -71,7 +71,7 @@ public class ZoekConfiguratie {
     /**
      * @return the searchProperty
      */
-    public Set getZoekVelden() {
+    public Set<ZoekAttribuut> getZoekVelden() {
         return zoekVelden;
     }
 
@@ -150,7 +150,7 @@ public class ZoekConfiguratie {
     /**
      * @return the resultaatVelden
      */
-    public Set getResultaatVelden() {
+    public Set<ResultaatAttribuut> getResultaatVelden() {
         return resultaatVelden;
     }
 

@@ -4,6 +4,13 @@
  */
 package nl.b3p.zoeker.configuratie;
 
+import java.io.IOException;
+import java.util.HashMap;
+import org.geotools.data.DataStore;
+import org.geotools.data.DataStoreFinder;
+import org.geotools.data.oracle.OracleDataStoreFactory;
+import org.geotools.data.postgis.PostgisDataStoreFactory;
+import org.geotools.data.wfs.WFSDataStoreFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -19,6 +26,7 @@ public class Bron {
     private String gebruikersnaam=null;
     private String wachtwoord=null;
     private Integer volgorde=null;
+    private static final int TIMEOUT = 30000;
 
     public Bron() {
     }
@@ -125,6 +133,96 @@ public class Bron {
         json.put("url", getUrl());
         json.put("volgorde", getVolgorde());
         return json;
+    }
+
+    public DataStore toDatastore() throws IOException{
+
+        if (this.getUrl() == null) {
+            return null;
+        }
+        HashMap params = new HashMap();
+        if (this.getUrl().toLowerCase().startsWith("jdbc:oracle:")) {
+            //jdbc:oracle:thin:@b3p-demoserver:1521:ORCL
+            int firstIndex;
+            int lastIndex;
+            firstIndex = this.getUrl().indexOf("@") + 1;
+            lastIndex = this.getUrl().indexOf(":", firstIndex);
+            String host = this.getUrl().substring(firstIndex, lastIndex);
+            firstIndex = lastIndex + 1;
+            lastIndex = this.getUrl().indexOf(":", firstIndex);
+            String port = this.getUrl().substring(firstIndex, lastIndex);
+            firstIndex = lastIndex + 1;
+            lastIndex = this.getUrl().indexOf(".", firstIndex);
+            String schema = null;
+            if (lastIndex == -1) {
+                lastIndex = this.getUrl().length();
+            } else {
+                schema = this.getUrl().substring(lastIndex + 1, this.getUrl().length());
+            }
+            String instance = this.getUrl().substring(firstIndex, lastIndex);
+            params.put("host", host);
+            params.put("port", port);
+            if (schema != null) {
+                params.put("schema", schema);
+            }
+            params.put("instance", instance);
+            params.put("user", this.getGebruikersnaam());
+            params.put("passwd", this.getWachtwoord());
+            params.put("dbtype", "oracle");
+            return (new OracleDataStoreFactory()).createDataStore(params);
+        }
+        if (this.getUrl().toLowerCase().startsWith("jdbc:")) {
+            //jdbc:postgresql://localhost:5432/edamvolendam_gis
+            int firstIndex;
+            int lastIndex;
+            firstIndex = this.getUrl().indexOf("//") + 2;
+            lastIndex = this.getUrl().indexOf(":", firstIndex);
+            String host = this.getUrl().substring(firstIndex, lastIndex);
+            firstIndex = lastIndex + 1;
+            lastIndex = this.getUrl().indexOf("/", firstIndex);
+            String port = this.getUrl().substring(firstIndex, lastIndex);
+            firstIndex = lastIndex + 1;
+            String database = this.getUrl().substring(firstIndex, this.getUrl().length());
+            String schema = "public";
+            if (database.indexOf(".") >= 0) {
+                String[] tokens = database.split("\\.");
+                if (tokens.length == 2) {
+                    schema = tokens[1];
+                    database = tokens[0];
+                }
+            }
+            params.put(PostgisDataStoreFactory.DBTYPE.key, "postgis");
+            params.put(PostgisDataStoreFactory.HOST.key, host);
+            params.put(PostgisDataStoreFactory.PORT.key, port);
+            params.put(PostgisDataStoreFactory.SCHEMA.key, schema);
+            params.put(PostgisDataStoreFactory.DATABASE.key, database);
+            if (this.getGebruikersnaam() != null) {
+                params.put(PostgisDataStoreFactory.USER.key, this.getGebruikersnaam());
+            }
+            if (this.getWachtwoord() != null) {
+                params.put(PostgisDataStoreFactory.PASSWD.key, this.getWachtwoord());
+            }
+        } else {
+            String url = this.getUrl();
+            if (this.getUrl().toLowerCase().indexOf("request=") == -1) {
+                if (url.indexOf("?") > 0) {
+                    url += "&";
+                } else {
+                    url += "?";
+                }
+                url += "request=GetCapabilities&service=WFS";
+            }
+            params.put(WFSDataStoreFactory.URL.key, url);
+            if (this.getGebruikersnaam() != null) {
+                params.put(WFSDataStoreFactory.USERNAME.key, this.getGebruikersnaam());
+            }
+            if (this.getWachtwoord() != null) {
+                params.put(WFSDataStoreFactory.PASSWORD.key, this.getWachtwoord());
+            }
+            params.put(WFSDataStoreFactory.TIMEOUT.key, TIMEOUT);
+        }
+        return DataStoreFinder.getDataStore(params);
+    
     }
 
     public String toString(){

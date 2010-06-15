@@ -13,7 +13,6 @@ import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -28,14 +27,10 @@ import nl.b3p.zoeker.hibernate.MyEMFDatabase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geotools.data.DataStore;
-import org.geotools.data.DataStoreFinder;
 import org.geotools.data.DefaultQuery;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.SchemaNotFoundException;
-import org.geotools.data.oracle.OracleDataStoreFactory;
 import org.geotools.data.ows.WFSCapabilities;
-import org.geotools.data.postgis.PostgisDataStoreFactory;
-import org.geotools.data.wfs.WFSDataStoreFactory;
 import org.geotools.data.wfs.v1_0_0.WFS_1_0_0_DataStore;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.GeoTools;
@@ -56,8 +51,7 @@ import org.opengis.filter.FilterFactory2;
 public class Zoeker {
 
     private static final int topMaxResults = 1000;
-    private static final Log log = LogFactory.getLog(Zoeker.class);
-    private static final int TIMEOUT = 60000;
+    private static final Log log = LogFactory.getLog(Zoeker.class);    
     private static final SimpleDateFormat sdf=new SimpleDateFormat("dd-MM-yyyy",new Locale("NL"));
 
     public List zoek(Integer[] zoekConfiguratieIds, String searchStrings[], Integer maxResults) {        
@@ -286,94 +280,11 @@ public class Zoeker {
      * @param b de Bron
      * @return een Datastore
      * @throws java.io.IOException
+     * @deprecated: use b.toDatastore();
      */
     //jdbc:postgresql://localhost:5432/edamvolendam_gis
     public static DataStore getDataStore(Bron b) throws IOException {
-        if (b.getUrl() == null) {
-            return null;
-        }
-        HashMap params = new HashMap();
-        if (b.getUrl().toLowerCase().startsWith("jdbc:oracle:")) {
-            //jdbc:oracle:thin:@b3p-demoserver:1521:ORCL
-            int firstIndex;
-            int lastIndex;
-            firstIndex = b.getUrl().indexOf("@") + 1;
-            lastIndex = b.getUrl().indexOf(":", firstIndex);
-            String host = b.getUrl().substring(firstIndex, lastIndex);
-            firstIndex = lastIndex + 1;
-            lastIndex = b.getUrl().indexOf(":", firstIndex);
-            String port = b.getUrl().substring(firstIndex, lastIndex);
-            firstIndex = lastIndex + 1;
-            lastIndex = b.getUrl().indexOf(".", firstIndex);
-            String schema = null;
-            if (lastIndex == -1) {
-                lastIndex = b.getUrl().length();
-            } else {
-                schema = b.getUrl().substring(lastIndex + 1, b.getUrl().length());
-            }
-            String instance = b.getUrl().substring(firstIndex, lastIndex);
-            params.put("host", host);
-            params.put("port", port);
-            if (schema != null) {
-                params.put("schema", schema);
-            }
-            params.put("instance", instance);
-            params.put("user", b.getGebruikersnaam());
-            params.put("passwd", b.getWachtwoord());
-            params.put("dbtype", "oracle");
-            return (new OracleDataStoreFactory()).createDataStore(params);
-        }
-        if (b.getUrl().toLowerCase().startsWith("jdbc:")) {
-            //jdbc:postgresql://localhost:5432/edamvolendam_gis
-            int firstIndex;
-            int lastIndex;
-            firstIndex = b.getUrl().indexOf("//") + 2;
-            lastIndex = b.getUrl().indexOf(":", firstIndex);
-            String host = b.getUrl().substring(firstIndex, lastIndex);
-            firstIndex = lastIndex + 1;
-            lastIndex = b.getUrl().indexOf("/", firstIndex);
-            String port = b.getUrl().substring(firstIndex, lastIndex);
-            firstIndex = lastIndex + 1;
-            String database = b.getUrl().substring(firstIndex, b.getUrl().length());
-            String schema = "public";
-            if (database.indexOf(".") >= 0) {
-                String[] tokens = database.split("\\.");
-                if (tokens.length == 2) {
-                    schema = tokens[1];
-                    database = tokens[0];
-                }
-            }
-            params.put(PostgisDataStoreFactory.DBTYPE.key, "postgis");
-            params.put(PostgisDataStoreFactory.HOST.key, host);
-            params.put(PostgisDataStoreFactory.PORT.key, port);
-            params.put(PostgisDataStoreFactory.SCHEMA.key, schema);
-            params.put(PostgisDataStoreFactory.DATABASE.key, database);
-            if (b.getGebruikersnaam() != null) {
-                params.put(PostgisDataStoreFactory.USER.key, b.getGebruikersnaam());
-            }
-            if (b.getWachtwoord() != null) {
-                params.put(PostgisDataStoreFactory.PASSWD.key, b.getWachtwoord());
-            }
-        } else {
-            String url = b.getUrl();
-            if (b.getUrl().toLowerCase().indexOf("request=") == -1) {
-                if (url.indexOf("?") > 0) {
-                    url += "&";
-                } else {
-                    url += "?";
-                }
-                url += "request=GetCapabilities&service=WFS";
-            }
-            params.put(WFSDataStoreFactory.URL.key, url);
-            if (b.getGebruikersnaam() != null) {
-                params.put(WFSDataStoreFactory.USERNAME.key, b.getGebruikersnaam());
-            }
-            if (b.getWachtwoord() != null) {
-                params.put(WFSDataStoreFactory.PASSWORD.key, b.getWachtwoord());
-            }
-            params.put(WFSDataStoreFactory.TIMEOUT.key, TIMEOUT);
-        }
-        return DataStoreFinder.getDataStore(params);
+        return b.toDatastore();
     }
     /**
      * Maakt het filter voor het zoekveld met als value het zoek criterium.
