@@ -26,7 +26,7 @@ public class Bron {
     private String gebruikersnaam=null;
     private String wachtwoord=null;
     private Integer volgorde=null;
-    private static final int TIMEOUT = 30000;
+    private static final int TIMEOUT = 60000;
 
     public Bron() {
     }
