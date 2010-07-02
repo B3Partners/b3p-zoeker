@@ -9,8 +9,11 @@ import java.util.HashMap;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
 import org.geotools.data.oracle.OracleDataStoreFactory;
+import org.geotools.data.ows.WFSCapabilities;
 import org.geotools.data.postgis.PostgisDataStoreFactory;
 import org.geotools.data.wfs.WFSDataStoreFactory;
+import org.geotools.data.wfs.v1_0_0.WFS_1_0_0_DataStore;
+import org.geotools.filter.FilterCapabilities;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -20,42 +23,45 @@ import org.json.JSONObject;
  */
 public class Bron {
 
-    private Integer id=null;
+    private Integer id = null;
     private String naam = null;
     private String url = null;
-    private String gebruikersnaam=null;
-    private String wachtwoord=null;
-    private Integer volgorde=null;
+    private String gebruikersnaam = null;
+    private String wachtwoord = null;
+    private Integer volgorde = null;
     private static final int TIMEOUT = 60000;
 
     public Bron() {
     }
-    public Bron(Integer id, String naam, String url, String gebruikersnaam, String wachtwoord, Integer volgorde){
-        this.id=id;
-        this.naam=naam;
-        this.url=url;
-        this.gebruikersnaam=gebruikersnaam;
-        this.wachtwoord=wachtwoord;
-        this.volgorde=volgorde;
+
+    public Bron(Integer id, String naam, String url, String gebruikersnaam, String wachtwoord, Integer volgorde) {
+        this.id = id;
+        this.naam = naam;
+        this.url = url;
+        this.gebruikersnaam = gebruikersnaam;
+        this.wachtwoord = wachtwoord;
+        this.volgorde = volgorde;
     }
-    public Bron(Integer id, String naam, String url){
-        this(id,naam,url,null,null,null);
+
+    public Bron(Integer id, String naam, String url) {
+        this(id, naam, url, null, null, null);
     }
 
 //getters and setters
     /**
      * @return the Id
      */
-    public Integer getId(){
+    public Integer getId() {
         return id;
     }
 
     /**
      * @param id the id to set
      */
-    public void setId(Integer id){
-        this.id=id;
+    public void setId(Integer id) {
+        this.id = id;
     }
+
     /**
      * @return the naam
      */
@@ -126,8 +132,8 @@ public class Bron {
         this.wachtwoord = wachtwoord;
     }
 
-    public JSONObject toJSON() throws JSONException{
-        JSONObject json= new JSONObject();
+    public JSONObject toJSON() throws JSONException {
+        JSONObject json = new JSONObject();
         json.put("id", id);
         json.put("naam", getNaam());
         json.put("url", getUrl());
@@ -135,7 +141,7 @@ public class Bron {
         return json;
     }
 
-    public DataStore toDatastore() throws IOException{
+    public DataStore toDatastore() throws IOException {
 
         if (this.getUrl() == null) {
             return null;
@@ -211,6 +217,10 @@ public class Bron {
                     url += "?";
                 }
                 url += "request=GetCapabilities&service=WFS";
+                //temp hack: default use version 1.0.0
+                if (url.toLowerCase().indexOf("version") == -1) {
+                    url += "&Version=1.0.0";
+                }
             }
             params.put(WFSDataStoreFactory.URL.key, url);
             if (this.getGebruikersnaam() != null) {
@@ -221,16 +231,28 @@ public class Bron {
             }
             params.put(WFSDataStoreFactory.TIMEOUT.key, TIMEOUT);
         }
-        return DataStoreFinder.getDataStore(params);
-    
+        DataStore ds = DataStoreFinder.getDataStore(params);
+        /*omdat de WFS_1_0_0_Datastore niet met de opengis filters werkt even toevoegen dat
+        er simpelle vergelijkingen kunnen worden gedaan. (de meeste servers kunnen dit natuurlijk);*/
+        if (ds instanceof WFS_1_0_0_DataStore) {
+            WFS_1_0_0_DataStore wfs100ds = (WFS_1_0_0_DataStore) ds;
+            WFSCapabilities wfscap = wfs100ds.getCapabilities();
+            FilterCapabilities filterCap = wfscap.getFilterCapabilities();
+            filterCap.addAll(FilterCapabilities.SIMPLE_COMPARISONS_OPENGIS);
+            boolean b=filterCap.supports(FilterCapabilities.SIMPLE_COMPARISONS_OPENGIS);
+            wfscap.setFilterCapabilities(filterCap);
+        }
+        return ds;
     }
 
-    public String toString(){
-        String returnValue="";
-        if (getNaam()!=null)
-            returnValue+=getNaam()+" ";
-        if (getUrl()!=null)
-            returnValue+="("+getUrl()+")";
+    public String toString() {
+        String returnValue = "";
+        if (getNaam() != null) {
+            returnValue += getNaam() + " ";
+        }
+        if (getUrl() != null) {
+            returnValue += "(" + getUrl() + ")";
+        }
         return returnValue;
     }
 }
