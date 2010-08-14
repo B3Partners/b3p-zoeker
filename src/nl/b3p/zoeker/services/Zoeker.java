@@ -73,7 +73,7 @@ public class Zoeker {
                 List zoekconfiguraties=em.createQuery(queryString).getResultList();
                 for (int i = 0; i < zoekconfiguraties.size(); i++) {
                     ZoekConfiguratie zc = (ZoekConfiguratie) zoekconfiguraties.get(i);
-                    results = zoekMetConfiguratie(zc, searchStrings, maxResults, results);
+                    results = zoekMetConfiguratie(zc, cleanStringArray(searchStrings), maxResults, results);
                 }
                 tx.commit();
             } catch (Exception ex) {
@@ -93,6 +93,16 @@ public class Zoeker {
             Collections.sort(results);
         }
         return results;
+    }
+
+    private String[] cleanStringArray(String[] sa) {
+        if (sa == null) {
+            return null;
+        }
+        for (int i = 0; i < sa.length; i++) {
+            sa[i] = sa[i].trim();
+        }
+        return sa;
     }
 
     /**
