@@ -292,8 +292,7 @@ public class Zoeker {
      * @throws java.io.IOException
      * @deprecated: use b.toDatastore();
      */
-    //jdbc:postgresql://localhost:5432/edamvolendam_gis
-    public static DataStore getDataStore(Bron b) throws IOException {
+     public static DataStore getDataStore(Bron b) throws IOException, Exception {
         return b.toDatastore();
     }
     /**
