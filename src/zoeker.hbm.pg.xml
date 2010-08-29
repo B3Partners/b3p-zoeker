@@ -2,12 +2,9 @@
 <!DOCTYPE hibernate-mapping SYSTEM "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>	
 	<class name="nl.b3p.zoeker.configuratie.Bron" table="bron">
-		<id name="id">
-			<column name="id" sql-type="serial"/>
-			<generator class="native">
-				<param name="sequence">bron_id_seq</param>
-			</generator>
-		</id>
+    <id name="id">
+      <generator class="identity"/>
+    </id>
 		<property name="naam"/>
 		<property name="url"/>
         <property name="gebruikersnaam"/>
@@ -15,40 +12,31 @@
 		<property name="volgorde"/>
 	</class>
 	<class name="nl.b3p.zoeker.configuratie.ZoekAttribuut" table="zoekveld">
-		<id name="id">
-			<column name="id" sql-type="serial"/>
-			<generator class="native">
-				<param name="sequence">zoekveld_id_seq</param>
-			</generator>
-		</id>
+    <id name="id">
+      <generator class="identity"/>
+    </id>
         <property name="naam"/>
 		<property name="label"/>
 		<property name="attribuutnaam"/>
-        <property name="type"/>
+        <property name="type" column="soort"/>
         <property name="volgorde"/>
 		<many-to-one class="nl.b3p.zoeker.configuratie.ZoekConfiguratie" name="zoekConfiguratie" column="zoekconfiguratie" lazy="false"/>
 	</class>
     <class name="nl.b3p.zoeker.configuratie.ResultaatAttribuut" table="resultaatveld">
-		<id name="id">
-			<column name="id" sql-type="serial"/>
-			<generator class="native">
-				<param name="sequence">resultaatveld_id_seq</param>
-			</generator>
-		</id>
+    <id name="id">
+      <generator class="identity"/>
+    </id>
         <property name="naam"/>
 		<property name="label"/>                
         <property name="volgorde"/>
 		<property name="attribuutnaam"/>
-        <property name="type"/>
+        <property name="type" column="soort"/>
 		<many-to-one class="nl.b3p.zoeker.configuratie.ZoekConfiguratie" name="zoekConfiguratie" column="zoekconfiguratie" lazy="false"/>
 	</class>   
 	<class name="nl.b3p.zoeker.configuratie.ZoekConfiguratie" table="zoekconfiguratie">
-		<id name="id">
-			<column name="id" sql-type="serial"/>
-			<generator class="native">
-				<param name="sequence">zoekconfiguratie_id_seq</param>
-			</generator>
-		</id>
+    <id name="id">
+      <generator class="identity"/>
+    </id>
 		<property name="naam"/>
 		<property column="featuretype" name="featureType"/>
 		<set name="zoekVelden" lazy="false" cascade="all-delete-orphan" order-by="volgorde">

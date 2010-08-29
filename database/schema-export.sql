@@ -1,6 +1,6 @@
 
     create table bron (
-        id serial not null,
+        id  serial not null,
         naam varchar(255),
         url varchar(255),
         gebruikersnaam varchar(255),
@@ -10,18 +10,18 @@
     );
 
     create table resultaatveld (
-        id serial not null,
+        id  serial not null,
         naam varchar(255),
         label varchar(255),
         volgorde int4,
         attribuutnaam varchar(255),
-        type int4,
+        soort int4,
         zoekconfiguratie int4,
         primary key (id)
     );
 
     create table zoekconfiguratie (
-        id serial not null,
+        id  serial not null,
         naam varchar(255),
         featuretype varchar(255),
         parentbron int4,
@@ -30,11 +30,11 @@
     );
 
     create table zoekveld (
-        id serial not null,
+        id  serial not null,
         naam varchar(255),
         label varchar(255),
         attribuutnaam varchar(255),
-        type int4,
+        soort int4,
         volgorde int4,
         zoekconfiguratie int4,
         primary key (id)
@@ -59,7 +59,3 @@
         add constraint FK239789827EE6CA2B 
         foreign key (zoekconfiguratie) 
         references zoekconfiguratie;
--- create sequence bron_id_seq;
--- create sequence resultaatveld_id_seq;
--- create sequence zoekconfiguratie_id_seq;
--- create sequence zoekveld_id_seq;

@@ -24,7 +24,7 @@
         <property name="naam"/>
         <property name="label"/>
         <property name="attribuutnaam"/>
-        <property name="type" column="typen"/>
+        <property name="type" column="soort"/>
         <property name="volgorde"/>
         <many-to-one class="nl.b3p.zoeker.configuratie.ZoekConfiguratie" name="zoekConfiguratie" column="zoekconfiguratie" lazy="false"/>
     </class>
@@ -39,7 +39,7 @@
         <property name="label"/>
         <property name="volgorde"/>
         <property name="attribuutnaam"/>
-        <property name="type" column="typen"/>
+        <property name="type" column="soort"/>
         <many-to-one class="nl.b3p.zoeker.configuratie.ZoekConfiguratie" name="zoekConfiguratie" column="zoekconfiguratie" lazy="false"/>
     </class>
     <class name="nl.b3p.zoeker.configuratie.ZoekConfiguratie" table="zoekconfiguratie">

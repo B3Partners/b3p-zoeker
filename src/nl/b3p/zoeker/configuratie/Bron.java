@@ -41,6 +41,7 @@ public class Bron {
     public static final String TYPE_JDBC = "jdbc";
     public static final String TYPE_ORACLE = "oracle";
     public static final String TYPE_WFS = "wfs";
+    public static final String TYPE_EMPTY = "unknown";
 
     public Bron() {
     }
@@ -152,6 +153,16 @@ public class Bron {
         return json;
     }
 
+    public String getType() {
+        if (checkType(TYPE_JDBC)) {
+            return TYPE_JDBC;
+        }
+        if (checkType(TYPE_WFS)) {
+            return TYPE_WFS;
+        }
+        return TYPE_EMPTY;
+    }
+
     public boolean checkType(String type) {
         if (this.getUrl() == null || type == null || type.length() == 0) {
             return false;
@@ -161,7 +172,6 @@ public class Bron {
                 if (type.equals(TYPE_ORACLE)) {
                     return true;
                 }
-                return false;
             }
             if (type.equals(TYPE_JDBC)) {
                 return true;
