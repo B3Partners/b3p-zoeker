@@ -10,6 +10,8 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
 import org.geotools.data.oracle.OracleDataStoreFactory;
@@ -42,6 +44,8 @@ public class Bron {
     public static final String TYPE_ORACLE = "oracle";
     public static final String TYPE_WFS = "wfs";
     public static final String TYPE_EMPTY = "unknown";
+
+    private static final Log logger = LogFactory.getLog(Bron.class);
 
     public Bron() {
     }
@@ -277,7 +281,14 @@ public class Bron {
     }
 
     public static DataStore createDataStoreFromParams(Map params) throws IOException, Exception {
-        DataStore ds = DataStoreFinder.getDataStore(params);
+
+        DataStore ds = null;
+
+        try {
+            ds = DataStoreFinder.getDataStore(params);
+        } catch (IOException ex) {
+            throw new Exception("Connectie naar gegevensbron mislukt. Controleer de bron instellingen.");
+        }
 
         if (ds instanceof WFS_1_0_0_DataStore) {
             WFS_1_0_0_DataStore wfs100ds = (WFS_1_0_0_DataStore) ds;
@@ -323,6 +334,7 @@ public class Bron {
         if (ds instanceof WFS_1_1_0_DataStore) {
             throw new Exception("WFS 1.1.0 datastore kent niet alle geometry elementen, dus nu niet gebruiken");
         }
+
         return ds;
     }
 
