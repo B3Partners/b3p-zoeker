@@ -257,13 +257,14 @@ public class Bron {
         if (checkType(TYPE_WFS)) {
             String url = this.getUrl();
             if (this.getUrl().toLowerCase().indexOf("request=") == -1) {
-                if (url.indexOf("?") > 0) {
-                    url += "&";
+                if (url.indexOf('?') == url.length() - 1) {
+                    url += "request=GetCapabilities&service=WFS";
+                } else if (url.lastIndexOf('&') == url.length() - 1) {
+                    url += "request=GetCapabilities&service=WFS";
                 } else {
-                    url += "?";
+                    url += "&request=GetCapabilities&service=WFS";
                 }
-                url += "request=GetCapabilities&service=WFS";
-                //temp hack: default use version 1.0.0
+                 //temp hack: default use version 1.0.0
                 if (url.toLowerCase().indexOf("version") == -1) {
                     url += "&Version=1.0.0";
                 }
