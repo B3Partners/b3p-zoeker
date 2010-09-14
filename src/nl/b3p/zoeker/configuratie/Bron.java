@@ -7,6 +7,7 @@ package nl.b3p.zoeker.configuratie;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,7 @@ import org.geotools.data.oracle.OracleDataStoreFactory;
 import org.geotools.data.ows.FeatureSetDescription;
 import org.geotools.data.ows.WFSCapabilities;
 import org.geotools.data.postgis.PostgisDataStoreFactory;
+import org.geotools.data.wfs.WFSDataStore;
 import org.geotools.data.wfs.WFSDataStoreFactory;
 import org.geotools.data.wfs.v1_0_0.WFS_1_0_0_DataStore;
 import org.geotools.data.wfs.v1_1_0.WFS_1_1_0_DataStore;
@@ -44,6 +46,9 @@ public class Bron {
     public static final String TYPE_ORACLE = "oracle";
     public static final String TYPE_WFS = "wfs";
     public static final String TYPE_EMPTY = "unknown";
+
+    static protected Map<Map, WFSDataStore> perParameterSetDataStoreCache = new HashMap();
+
 
     private static final Log logger = LogFactory.getLog(Bron.class);
 
@@ -277,20 +282,49 @@ public class Bron {
                 params.put(WFSDataStoreFactory.PASSWORD.key, this.getWachtwoord());
             }
             params.put(WFSDataStoreFactory.TIMEOUT.key, TIMEOUT);
+
+            // Geotools cachet schema's, handmatig factory aanmaken omzeilt de cache
+            // alleen doen als in gisviewerConfig, voor ander geval eigen cache
+            if (url.contains("_VIEWER_CONFIG=true")) {
+                DataStore ds = (new WFSDataStoreFactory()).createDataStore(params);
+                return repairDataStore(ds);
+            } else {
+                DataStore ds = getWfsCache(params);
+                if (ds==null) {
+                    ds = (new WFSDataStoreFactory()).createDataStore(params);
+                    putWfsCache(params, (WFSDataStore)repairDataStore(ds));
+                }
+                return ds;
+            }
+
         }
         return createDataStoreFromParams(params);
     }
 
+    public static synchronized void flushWfsCache() {
+        perParameterSetDataStoreCache = new HashMap();
+    }
+    public static synchronized void putWfsCache(HashMap p, WFSDataStore ds) {
+        perParameterSetDataStoreCache.put(p, ds);
+    }
+    public static synchronized WFSDataStore getWfsCache(HashMap p) {
+        if (perParameterSetDataStoreCache.containsKey(p)) {
+            return perParameterSetDataStoreCache.get(p);
+        }
+        return null;
+    }
+
     public static DataStore createDataStoreFromParams(Map params) throws IOException, Exception {
-
         DataStore ds = null;
-
         try {
-            ds = DataStoreFinder.getDataStore(params);
+            ds = repairDataStore(DataStoreFinder.getDataStore(params));
         } catch (IOException ex) {
             throw new Exception("Connectie naar gegevensbron mislukt. Controleer de bron instellingen.");
         }
+        return ds;
+    }
 
+    private static DataStore repairDataStore(DataStore ds) throws Exception {
         if (ds instanceof WFS_1_0_0_DataStore) {
             WFS_1_0_0_DataStore wfs100ds = (WFS_1_0_0_DataStore) ds;
             WFSCapabilities wfscap = wfs100ds.getCapabilities();
@@ -335,7 +369,6 @@ public class Bron {
         if (ds instanceof WFS_1_1_0_DataStore) {
             throw new Exception("WFS 1.1.0 datastore kent niet alle geometry elementen, dus nu niet gebruiken");
         }
-
         return ds;
     }
 
