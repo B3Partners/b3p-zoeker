@@ -29,7 +29,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
+import static org.junit.Assert.*;
 /**
  *
  * @author Roy
@@ -94,7 +94,7 @@ public class ZoekerTest{
         zc.addZoekAttribuut(za);
         zc.addResultaatAttribuut(ra);
         List resultaten= zoeker.zoekMetConfiguratie(zc, new String[]{arnhemWKT}, 10000, new ArrayList());
-        printResultsToLog(resultaten);       
+        assertTrue(resultaten.size()>=1);
     }
     @Test
     public void searchWithGeomMapserver(){        
@@ -108,7 +108,8 @@ public class ZoekerTest{
         zc.addZoekAttribuut(za);
         zc.addResultaatAttribuut(ra);
         List resultaten= zoeker.zoekMetConfiguratie(zc, new String[]{arnhemWKT}, 10000, new ArrayList());
-        printResultsToLog(resultaten);        
+        assertTrue(resultaten.size()>=1);
+
     }
     
     @Test
@@ -123,7 +124,7 @@ public class ZoekerTest{
         zc.addZoekAttribuut(za);
         zc.addResultaatAttribuut(ra);
         List resultaten= zoeker.zoekMetConfiguratie(zc, new String[]{arnhemWKT}, 10000, new ArrayList());
-        printResultsToLog(resultaten);
+        assertTrue(resultaten.size()>=1);
     }
 
     @Test
@@ -138,7 +139,7 @@ public class ZoekerTest{
         zc.addResultaatAttribuut(ra);
 
         List resultaten3= zoeker.zoekMetConfiguratie(zc, new String[]{"Arnhem"}, 10000, new ArrayList());
-        printResultsToLog(resultaten3);
+        assertTrue(resultaten3.size()>=1);
     }
     @Test
     public void searchWithLessGreater(){
@@ -154,7 +155,7 @@ public class ZoekerTest{
         zc.addZoekAttribuut(za2);
         zc.addResultaatAttribuut(ra);
         List resultaten= zoeker.zoekMetConfiguratie(zc, new String[]{"10000","15000"}, 25, new ArrayList());
-        printResultsToLog(resultaten);
+        assertTrue(resultaten.size()>=1);
     }
     @Test
     public void searchWith2LikeFilters(){
@@ -170,7 +171,7 @@ public class ZoekerTest{
         zc.addZoekAttribuut(za1);
         zc.addResultaatAttribuut(ra);
         List resultaten= zoeker.zoekMetConfiguratie(zc, new String[]{"Utrecht","Bedrijventerrein Lageweide"}, 25, new ArrayList());
-        printResultsToLog(resultaten);
+       assertTrue(resultaten.size()>=1);
     }
     @Test
     public void compare(){
@@ -188,7 +189,7 @@ public class ZoekerTest{
 
         List resultaten= zoeker.zoekMetConfiguratie(zc, new String[]{"e"}, 100, new ArrayList());
         Collections.sort(resultaten);
-        printResultsToLog(resultaten);
+        assertTrue(resultaten.size()>=1);
     }
     
     public void testEsriService9_3() {
@@ -204,7 +205,7 @@ public class ZoekerTest{
         
         List resultaten= zoeker.zoekMetConfiguratie(zc, new String[]{"Schaarsbergen"}, 100, new ArrayList());
         Collections.sort(resultaten);
-        printResultsToLog(resultaten);
+        assertTrue(resultaten.size()>=1);
     }
     private void printResultsToLog(List resultaten){
         log.info("Er zijn "+resultaten.size()+" resultaten gevonden:");
