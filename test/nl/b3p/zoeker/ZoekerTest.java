@@ -85,7 +85,7 @@ public class ZoekerTest{
      */
     public void searchWithGeomDeegree(){
         //test op roonline deegree wfs
-        Bron bron = new Bron(1,"ro-online","http://pilot.ruimtelijkeplannen.nl/afnemers/services?Version=1.0.0");
+        Bron bron = new Bron(1,"ro-online","http://afnemers.ruimtelijkeplannen.nl/afnemers/services?Version=1.0.0");
         ZoekConfiguratie zc = new ZoekConfiguratie(null,"planzoeken op geometry","app:Plangebied",bron,null);
 
         ZoekAttribuut za = new ZoekAttribuut(null,"op geometry","geometrie", "geom",3,null);
@@ -94,6 +94,7 @@ public class ZoekerTest{
         zc.addZoekAttribuut(za);
         zc.addResultaatAttribuut(ra);
         List resultaten= zoeker.zoekMetConfiguratie(zc, new String[]{arnhemWKT}, 10000, new ArrayList());
+        assertNotNull(resultaten);
         assertTrue(resultaten.size()>=1);
     }
     @Test
@@ -108,7 +109,7 @@ public class ZoekerTest{
         zc.addZoekAttribuut(za);
         zc.addResultaatAttribuut(ra);
         List resultaten= zoeker.zoekMetConfiguratie(zc, new String[]{arnhemWKT}, 10000, new ArrayList());
-        assertTrue(resultaten.size()>=1);
+        assertEquals(resultaten.size(),1);
 
     }
     
@@ -124,7 +125,7 @@ public class ZoekerTest{
         zc.addZoekAttribuut(za);
         zc.addResultaatAttribuut(ra);
         List resultaten= zoeker.zoekMetConfiguratie(zc, new String[]{arnhemWKT}, 10000, new ArrayList());
-        assertTrue(resultaten.size()>=1);
+        assertEquals(resultaten.size(),7);
     }
 
     @Test
@@ -139,6 +140,7 @@ public class ZoekerTest{
         zc.addResultaatAttribuut(ra);
 
         List resultaten3= zoeker.zoekMetConfiguratie(zc, new String[]{"Arnhem"}, 10000, new ArrayList());
+        assertNotNull(resultaten3);
         assertTrue(resultaten3.size()>=1);
     }
     @Test
@@ -155,7 +157,7 @@ public class ZoekerTest{
         zc.addZoekAttribuut(za2);
         zc.addResultaatAttribuut(ra);
         List resultaten= zoeker.zoekMetConfiguratie(zc, new String[]{"10000","15000"}, 25, new ArrayList());
-        assertTrue(resultaten.size()>=1);
+        assertEquals(resultaten.size(),25);
     }
     @Test
     public void searchWith2LikeFilters(){
@@ -171,7 +173,7 @@ public class ZoekerTest{
         zc.addZoekAttribuut(za1);
         zc.addResultaatAttribuut(ra);
         List resultaten= zoeker.zoekMetConfiguratie(zc, new String[]{"Utrecht","Bedrijventerrein Lageweide"}, 25, new ArrayList());
-       assertTrue(resultaten.size()>=1);
+        assertEquals(resultaten.size(),1);
     }
     @Test
     public void compare(){
@@ -189,7 +191,7 @@ public class ZoekerTest{
 
         List resultaten= zoeker.zoekMetConfiguratie(zc, new String[]{"e"}, 100, new ArrayList());
         Collections.sort(resultaten);
-        assertTrue(resultaten.size()>=1);
+        assertEquals(resultaten.size(),100);
     }
     
     public void testEsriService9_3() {
@@ -205,7 +207,7 @@ public class ZoekerTest{
         
         List resultaten= zoeker.zoekMetConfiguratie(zc, new String[]{"Schaarsbergen"}, 100, new ArrayList());
         Collections.sort(resultaten);
-        assertTrue(resultaten.size()>=1);
+        assertEquals(resultaten.size(),1);
     }
     private void printResultsToLog(List resultaten){
         log.info("Er zijn "+resultaten.size()+" resultaten gevonden:");
