@@ -48,9 +48,11 @@ public class Bron {
     public static final String TYPE_EMPTY = "unknown";
 
     static protected Map<Map, WFSDataStore> perParameterSetDataStoreCache = new HashMap();
+    static protected long dataStoreTimestamp = 0l;
+    private static long dataStoreLifecycle = 0l;
+    public static final String LIFECYCLE_CACHE_PARAM = "cachelifecycle";
 
-
-    private static final Log logger = LogFactory.getLog(Bron.class);
+    private static final Log log = LogFactory.getLog(Bron.class);
 
     public Bron() {
     }
@@ -68,7 +70,6 @@ public class Bron {
         this(id, naam, url, null, null, null);
     }
 
-//getters and setters
     /**
      * @return the Id
      */
@@ -283,20 +284,13 @@ public class Bron {
             }
             params.put(WFSDataStoreFactory.TIMEOUT.key, TIMEOUT);
 
-            // Geotools cachet schema's, handmatig factory aanmaken omzeilt de cache
-            // alleen doen als in gisviewerConfig, voor ander geval eigen cache
-            if (url.contains("_VIEWER_CONFIG=true")) {
-                DataStore ds = (new WFSDataStoreFactory()).createDataStore(params);
-                return repairDataStore(ds);
-            } else {
-                DataStore ds = getWfsCache(params);
-                if (ds==null) {
-                    ds = (new WFSDataStoreFactory()).createDataStore(params);
-                    putWfsCache(params, (WFSDataStore)repairDataStore(ds));
-                }
-                return ds;
+            DataStore ds = getWfsCache(params);
+            if (ds == null) {
+                ds = (new WFSDataStoreFactory()).createDataStore(params);
+                putWfsCache(params, (WFSDataStore) repairDataStore(ds));
             }
-
+            return ds;
+ 
         }
         return createDataStoreFromParams(params);
     }
@@ -308,11 +302,36 @@ public class Bron {
         perParameterSetDataStoreCache.put(p, ds);
     }
     public static synchronized WFSDataStore getWfsCache(HashMap p) {
+        long nowTimestamp = (new Date()).getTime();
+        if (getDataStoreLifecycle() > 0 && (nowTimestamp - dataStoreTimestamp) > getDataStoreLifecycle()) {
+            flushWfsCache();
+            dataStoreTimestamp = nowTimestamp;
+            log.info("WFS cache flushed at: " + nowTimestamp + " ms, lifecycle: "
+                    + getDataStoreLifecycle() + " ms (0 is no automatic cache flush).");
+            return null;
+        }
         if (perParameterSetDataStoreCache.containsKey(p)) {
             return perParameterSetDataStoreCache.get(p);
         }
         return null;
     }
+    
+    /**
+     * @return the dataStoreLifecycle
+     */
+    public static long getDataStoreLifecycle() {
+        return dataStoreLifecycle;
+    }
+
+    /**
+     * @param aDataStoreLifecycle the dataStoreLifecycle to set
+     */
+    public static void setDataStoreLifecycle(long aDataStoreLifecycle) {
+        log.info("WFS cache lifecycle: "
+                + getDataStoreLifecycle() + " ms (0 is no automatic cache flush).");
+        dataStoreLifecycle = aDataStoreLifecycle;
+    }
+
 
     public static DataStore createDataStoreFromParams(Map params) throws IOException, Exception {
         DataStore ds = null;
