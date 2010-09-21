@@ -263,7 +263,9 @@ public class Bron {
         if (checkType(TYPE_WFS)) {
             String url = this.getUrl();
             if (this.getUrl().toLowerCase().indexOf("request=") == -1) {
-                if (url.indexOf('?') == url.length() - 1) {
+                if (url.indexOf('?') < 0) {
+                    url += "?request=GetCapabilities&service=WFS";
+                } else if (url.indexOf('?') == url.length() - 1) {
                     url += "request=GetCapabilities&service=WFS";
                 } else if (url.lastIndexOf('&') == url.length() - 1) {
                     url += "request=GetCapabilities&service=WFS";
