@@ -13,6 +13,7 @@ import java.util.Set;
 import org.geotools.data.DataStore;
 import org.geotools.data.DefaultQuery;
 import org.geotools.data.FeatureSource;
+import org.geotools.data.QueryCapabilities;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.GeoTools;
 import org.geotools.feature.FeatureCollection;
@@ -58,11 +59,11 @@ public class ZoekAttribuut extends Attribuut {
     static FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(GeoTools.getDefaultHints());
 
     public static void main(String[] args) throws IOException, Exception {
-        Bron b = new Bron(0, "buurten", "http://x5.b3p.nl/cgi-bin/mapserv_fwtools?map=/srv/maps/kaartenbalie.map&", null, null, 0);
-
+//        Bron b = new Bron(0, "buurten", "http://x5.b3p.nl/cgi-bin/mapserv_fwtools?map=/srv/maps/kaartenbalie.map&", null, null, 0);
+        Bron b = new Bron(0, "buurten", "jdbc:postgresql://x5.b3p.nl:5432/demo_kaartenbalie", "postgres", "***REMOVED***", 0);
         DataStore ds = b.toDatastore();
 
-        String featureTypeName = "buurten_2006";
+        String featureTypeName = "buurt_2006_cbs";
         String attributeName = "gm_naam";
         String sortAttributeName = "bu_naam";
         String geomAttributeName = "the_geom";
@@ -70,7 +71,7 @@ public class ZoekAttribuut extends Attribuut {
         propNames.add(attributeName);
 
         FeatureSource fs = ds.getFeatureSource(featureTypeName);
-
+        QueryCapabilities qc = fs.getQueryCapabilities();
 
         Set<String> uniqueValues = new HashSet();
         Filter filter = null;
@@ -79,6 +80,12 @@ public class ZoekAttribuut extends Attribuut {
         SortBy[] sortBy1 = new SortBy[]{ff.sort(sortAttributeName, SortOrder.ASCENDING)};
         SortBy[] sortBy2 = new SortBy[]{ff.sort(sortAttributeName, SortOrder.DESCENDING)};
 
+        if (qc!=null && qc.supportsSorting(sortBy1)) {
+            System.out.println("sorting supported");
+        }
+        if (qc!=null && qc.isOffsetSupported()) {
+            System.out.println("offset supported");
+        }
 
 //        21000,357000,283000,615000
         int minx = 21000;
@@ -98,7 +105,7 @@ public class ZoekAttribuut extends Attribuut {
 //      1       10000   434     6       1:33
 //      1       geen    434     6       1:40
 
-        int aantalSegmenten = 10;
+        int aantalSegmenten = 3;
         int max = 100;
 
         int deltax = (maxx - minx) / aantalSegmenten;
@@ -156,11 +163,14 @@ catch(InterruptedException ie){
                         while (fi.hasNext()) {
                             Feature f = (Feature) fi.next();
                             String v = (String) f.getProperty(attributeName).getValue();
-                            System.out.println("gemeente  " + v);
-                            if (!uniqueValuesLoop.contains(v)) {
-                                found = true;
-                                uniqueValuesLoop.add(v);
-                                System.out.println("nieuwe gemeente  " + v);
+                            if (v!=null) {
+                                v =  v.trim();
+                                System.out.println("gemeente  " + v);
+                                if (!uniqueValuesLoop.contains(v)) {
+                                    found = true;
+                                    uniqueValuesLoop.add(v);
+                                    System.out.println("nieuwe gemeente  " + v);
+                                }
                             }
                         }
                     } catch (Exception e) {
@@ -195,10 +205,12 @@ catch(InterruptedException ie){
         PropertyName pn = ff.property(key);
         for (int i = 0; i < values.length; i++) {
             String val = values[i];
-            if (val.contains("'")) {
-                val= val.replaceAll("'", "\\\\'");
+            if (val != null) {
+                if (val.contains("'")) {
+                    val = val.replaceAll("'", "\\'");
+                }
+                filters.add(ff.equals(pn, ff.literal(val)));
             }
-            filters.add(ff.equals(pn, ff.literal(val)));
 
         }
         if (filters.size() == 1) {
