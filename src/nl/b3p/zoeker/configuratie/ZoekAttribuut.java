@@ -71,6 +71,7 @@ public class ZoekAttribuut extends Attribuut {
 
         FeatureSource fs = ds.getFeatureSource(featureTypeName);
 
+
         Set<String> uniqueValues = new HashSet();
         Filter filter = null;
         DefaultQuery query = null;
@@ -97,7 +98,7 @@ public class ZoekAttribuut extends Attribuut {
 //      1       10000   434     6       1:33
 //      1       geen    434     6       1:40
 
-        int aantalSegmenten = 5;
+        int aantalSegmenten = 10;
         int max = 100;
 
         int deltax = (maxx - minx) / aantalSegmenten;
@@ -113,7 +114,14 @@ public class ZoekAttribuut extends Attribuut {
                 int minyLoop = miny + yloop * deltay;
                 int maxyLoop = minyLoop + deltay;
 
-
+try{
+  //do what you want to do before sleeping
+  Thread.currentThread().sleep(5000);//sleep for 1000 ms
+  //do what you want to do after sleeptig
+}
+catch(InterruptedException ie){
+//If this thread was intrrupted by another thread
+}
                 Filter geomFilter = null;
                 if (aantalSegmenten > 0) {
                     CoordinateReferenceSystem crs = ds.getSchema(featureTypeName).getGeometryDescriptor().getCoordinateReferenceSystem();
@@ -155,8 +163,16 @@ public class ZoekAttribuut extends Attribuut {
                                 System.out.println("nieuwe gemeente  " + v);
                             }
                         }
-                    } catch (Exception ioe) {
+                    } catch (Exception e) {
                         System.out.println("xxxxxx");
+                        String mapserver4Hack = "msQueryByRect(): Search returned no results. No matching record(s) found.";
+                        String message =  e.getMessage();
+                        if (message!=null && message.contains(mapserver4Hack)) {
+                            // mapserver 4 returns service exception when no hits, this is not compliant.
+                        } else {
+//                            found=true;
+                            throw e;
+                        }
                     }
                     System.out.println("-------");
                 } while (found);
@@ -179,9 +195,11 @@ public class ZoekAttribuut extends Attribuut {
         PropertyName pn = ff.property(key);
         for (int i = 0; i < values.length; i++) {
             String val = values[i];
-            if (!val.contains("'")) {
-                filters.add(ff.equals(pn, ff.literal(val)));
+            if (val.contains("'")) {
+                val= val.replaceAll("'", "\\\\'");
             }
+            filters.add(ff.equals(pn, ff.literal(val)));
+
         }
         if (filters.size() == 1) {
             return ff.not(filters.get(0));

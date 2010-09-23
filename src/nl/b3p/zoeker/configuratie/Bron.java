@@ -285,6 +285,7 @@ public class Bron {
                 params.put(WFSDataStoreFactory.PASSWORD.key, this.getWachtwoord());
             }
             params.put(WFSDataStoreFactory.TIMEOUT.key, TIMEOUT);
+            params.put(WFSDataStoreFactory.PROTOCOL.key, Boolean.TRUE);
 
             DataStore ds = getWfsCache(params);
             if (ds == null) {
