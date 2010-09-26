@@ -18,7 +18,6 @@ public class ZoekResultaat implements Comparable {
 
     private static final Log log = LogFactory.getLog(ZoekResultaat.class);
     private ArrayList<ZoekResultaatAttribuut> attributen = null;
-    private Integer zoekConfigId = null;
     private ZoekConfiguratie zoekConfiguratie = null;
     private double maxx;
     private double maxy;

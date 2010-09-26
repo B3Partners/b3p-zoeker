@@ -24,6 +24,7 @@ import nl.b3p.zoeker.configuratie.ResultaatAttribuut;
 import nl.b3p.zoeker.configuratie.ZoekAttribuut;
 import nl.b3p.zoeker.configuratie.ZoekConfiguratie;
 import nl.b3p.zoeker.hibernate.MyEMFDatabase;
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geotools.data.DataStore;
@@ -118,6 +119,12 @@ public class Zoeker {
         }
         if (zc == null || searchStrings == null) {
             return results;
+        }
+        if (!zc.isResultListDynamic() && zc.isCachedResultListReady()) {
+            /**
+             * zoekresultaten worden uit cache gehaald.
+             */
+            throw new NotImplementedException("Cache not implemented yet.");
         }
         Bron bron = zc.getBron();
         ArrayList<ZoekResultaat> zoekResultaten = new ArrayList(results);

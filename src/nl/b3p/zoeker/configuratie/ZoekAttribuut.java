@@ -7,7 +7,6 @@ package nl.b3p.zoeker.configuratie;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import org.geotools.data.DataStore;
@@ -19,6 +18,8 @@ import org.geotools.factory.GeoTools;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.opengis.feature.Feature;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
@@ -33,6 +34,27 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 public class ZoekAttribuut extends Attribuut {
 
+    public static final String SELECT_CONTROL = "selectControle";
+    public static final String RADIO_CONTROL = "radioControle";
+    public static final String TEXT_CONTROL = "textControle";
+    public static final String TEXTAREA_CONTROL = "textareaControle";
+
+    private String inputControleType = TEXT_CONTROL;
+    /**
+     * inputControleSize betekent afh van controle een van de volgende dingen
+     * text: aantal karakters breed
+     * textarea: aantal regels hoog
+     * select: aantal regels in (multi) selectbox
+     * radio: aantal regels in scroll div
+     * <=0 betekent niet gedefinieerd
+     */
+    private int inputControleSize = 0;
+
+    /**
+     * Er is een zoekconfiguratie nodig voor het vullen van de inputlijst
+     */
+    private ZoekConfiguratie inputListZoekConfiguratie = null;
+
     public ZoekAttribuut() {
     }
 
@@ -41,12 +63,7 @@ public class ZoekAttribuut extends Attribuut {
     }
 
     public static ZoekAttribuut[] setToZoekVeldenArray(Set set) {
-        ZoekAttribuut[] zoekattributen = new ZoekAttribuut[set.size()];
-        Iterator it = set.iterator();
-        for (int i = 0; it.hasNext(); i++) {
-            zoekattributen[i] = (ZoekAttribuut) it.next();
-        }
-        return zoekattributen;
+        return (ZoekAttribuut[]) set.toArray(new ZoekAttribuut[set.size()]);
     }
 
     public boolean isFilterMogelijk() {
@@ -55,8 +72,65 @@ public class ZoekAttribuut extends Attribuut {
         }
         return this.getType() < 100;
     }
-    
-    static FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(GeoTools.getDefaultHints());
+
+    @Override
+    public JSONObject toJSON() throws JSONException {
+        JSONObject json = new JSONObject();
+        json.put("id", getId());
+        json.put("naam", getNaam());
+        json.put("attribuutnaam", getAttribuutLocalnaam());
+        json.put("label", getLabel());
+        json.put("type", getType());
+        json.put("volgorde", getVolgorde());
+        json.put("inputControleType", getInputControleType());
+        json.put("inputControleSize", getInputControleSize());
+        json.put("inputListZoekConfiguratie", getInputListZoekConfiguratie());
+        return json;
+    }
+
+    /**
+     * @return the inputControleType
+     */
+    public String getInputControleType() {
+        return inputControleType;
+    }
+
+    /**
+     * @param inputControleType the inputControleType to set
+     */
+    public void setInputControleType(String inputControleType) {
+        this.inputControleType = inputControleType;
+    }
+
+    /**
+     * @return the inputControleSize
+     */
+    public int getInputControleSize() {
+        return inputControleSize;
+    }
+
+    /**
+     * @param inputControleSize the inputControleSize to set
+     */
+    public void setInputControleSize(int inputControleSize) {
+        this.inputControleSize = inputControleSize;
+    }
+
+   /**
+     * @return the inputListZoekConfiguratie
+     */
+    public ZoekConfiguratie getInputListZoekConfiguratie() {
+        return inputListZoekConfiguratie;
+    }
+
+    /**
+     * @param inputListZoekConfiguratie the inputListZoekConfiguratie to set
+     */
+    public void setInputListZoekConfiguratie(ZoekConfiguratie inputListZoekConfiguratie) {
+        this.inputListZoekConfiguratie = inputListZoekConfiguratie;
+    }
+
+     static FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(GeoTools.getDefaultHints());
 
     public static void main(String[] args) throws IOException, Exception {
 //        Bron b = new Bron(0, "buurten", "http://x5.b3p.nl/cgi-bin/mapserv_fwtools?map=/srv/maps/kaartenbalie.map&", null, null, 0);
@@ -80,10 +154,10 @@ public class ZoekAttribuut extends Attribuut {
         SortBy[] sortBy1 = new SortBy[]{ff.sort(sortAttributeName, SortOrder.ASCENDING)};
         SortBy[] sortBy2 = new SortBy[]{ff.sort(sortAttributeName, SortOrder.DESCENDING)};
 
-        if (qc!=null && qc.supportsSorting(sortBy1)) {
+        if (qc != null && qc.supportsSorting(sortBy1)) {
             System.out.println("sorting supported");
         }
-        if (qc!=null && qc.isOffsetSupported()) {
+        if (qc != null && qc.isOffsetSupported()) {
             System.out.println("offset supported");
         }
 
@@ -121,14 +195,13 @@ public class ZoekAttribuut extends Attribuut {
                 int minyLoop = miny + yloop * deltay;
                 int maxyLoop = minyLoop + deltay;
 
-try{
-  //do what you want to do before sleeping
-  Thread.currentThread().sleep(5000);//sleep for 1000 ms
-  //do what you want to do after sleeptig
-}
-catch(InterruptedException ie){
+                try {
+                    //do what you want to do before sleeping
+                    Thread.currentThread().sleep(5000);//sleep for 1000 ms
+                    //do what you want to do after sleeptig
+                } catch (InterruptedException ie) {
 //If this thread was intrrupted by another thread
-}
+                }
                 Filter geomFilter = null;
                 if (aantalSegmenten > 0) {
                     CoordinateReferenceSystem crs = ds.getSchema(featureTypeName).getGeometryDescriptor().getCoordinateReferenceSystem();
@@ -151,11 +224,11 @@ catch(InterruptedException ie){
                     }
                     query.setMaxFeatures(max);
                     query.setPropertyNames(propNames);
-                    if (loopNum%2 == 0) {
+                    if (loopNum % 2 == 0) {
                         query.setSortBy(sortBy1);
                     } else {
                         query.setSortBy(sortBy2);
-                   }
+                    }
 
                     FeatureCollection fc = fs.getFeatures(query);
                     FeatureIterator fi = fc.features();
@@ -163,8 +236,8 @@ catch(InterruptedException ie){
                         while (fi.hasNext()) {
                             Feature f = (Feature) fi.next();
                             String v = (String) f.getProperty(attributeName).getValue();
-                            if (v!=null) {
-                                v =  v.trim();
+                            if (v != null) {
+                                v = v.trim();
                                 System.out.println("gemeente  " + v);
                                 if (!uniqueValuesLoop.contains(v)) {
                                     found = true;
@@ -176,8 +249,8 @@ catch(InterruptedException ie){
                     } catch (Exception e) {
                         System.out.println("xxxxxx");
                         String mapserver4Hack = "msQueryByRect(): Search returned no results. No matching record(s) found.";
-                        String message =  e.getMessage();
-                        if (message!=null && message.contains(mapserver4Hack)) {
+                        String message = e.getMessage();
+                        if (message != null && message.contains(mapserver4Hack)) {
                             // mapserver 4 returns service exception when no hits, this is not compliant.
                         } else {
 //                            found=true;
@@ -239,4 +312,5 @@ catch(InterruptedException ie){
             return null;
         }
     }
-}
+
+  }
