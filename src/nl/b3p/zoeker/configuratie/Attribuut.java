@@ -20,6 +20,7 @@ public class Attribuut {
     //datum typen
     public final static int KLEINER_DAN_TYPE=4;
     public final static int GROTER_DAN_TYPE=5;
+    public final static int GELIJK_AAN_TYPE=6;
 
     //typen die betrekking hebben op een van de andere typen.
     public final static int STRAAL_TYPE=100;

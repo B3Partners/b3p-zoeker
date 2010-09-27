@@ -339,6 +339,8 @@ public class Zoeker {
             filter=ff.greaterOrEqual(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString));
         }else if (zoekVeld.getType().intValue()==Attribuut.KLEINER_DAN_TYPE){            
             filter=ff.lessOrEqual(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString));
+        }else if (zoekVeld.getType().intValue()==Attribuut.GELIJK_AAN_TYPE){
+            filter=ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString));
         }else if (zoekVeld.isFilterMogelijk()){
             String wildeSearchString=null;
             if(propertyIsNumber(ft.getDescriptor(zoekVeld.getAttribuutnaam()))){
