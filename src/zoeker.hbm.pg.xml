@@ -1,27 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE hibernate-mapping SYSTEM "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>	
-	<class name="nl.b3p.zoeker.configuratie.Bron" table="bron">
-    <id name="id">
-      <generator class="identity"/>
-    </id>
-		<property name="naam"/>
-		<property name="url"/>
+    <class name="nl.b3p.zoeker.configuratie.Bron" table="bron">
+        <id name="id">
+          <generator class="identity"/>
+        </id>
+        <property name="naam"/>
+        <property name="url"/>
         <property name="gebruikersnaam"/>
         <property name="wachtwoord"/>
-		<property name="volgorde"/>
-	</class>
-	<class name="nl.b3p.zoeker.configuratie.ZoekAttribuut" table="zoekveld">
-    <id name="id">
-      <generator class="identity"/>
-    </id>
+        <property name="volgorde"/>
+    </class>
+    <class name="nl.b3p.zoeker.configuratie.ZoekAttribuut" table="zoekveld">
+        <id name="id">
+          <generator class="identity"/>
+        </id>
         <property name="naam"/>
-		<property name="label"/>
-		<property name="attribuutnaam"/>
+        <property name="label"/>
+        <property name="attribuutnaam"/>
         <property name="type" column="soort"/>
         <property name="volgorde"/>
-		<many-to-one class="nl.b3p.zoeker.configuratie.ZoekConfiguratie" name="zoekConfiguratie" column="zoekconfiguratie" lazy="false"/>
-	</class>
+        <many-to-one class="nl.b3p.zoeker.configuratie.ZoekConfiguratie" name="zoekConfiguratie" column="zoekconfiguratie" lazy="false"/>
+        <property name="inputtype"/>
+        <property name="inputsize"/>
+    </class>
     <class name="nl.b3p.zoeker.configuratie.ResultaatAttribuut" table="resultaatveld">
     <id name="id">
       <generator class="identity"/>

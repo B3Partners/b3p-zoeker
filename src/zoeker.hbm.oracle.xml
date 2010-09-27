@@ -27,6 +27,8 @@
         <property name="type" column="soort"/>
         <property name="volgorde"/>
         <many-to-one class="nl.b3p.zoeker.configuratie.ZoekConfiguratie" name="zoekConfiguratie" column="zoekconfiguratie" lazy="false"/>
+        <property name="inputtype"/>
+        <property name="inputsize"/>
     </class>
     <class name="nl.b3p.zoeker.configuratie.ResultaatAttribuut" table="resultaatveld">
         <id name="id">

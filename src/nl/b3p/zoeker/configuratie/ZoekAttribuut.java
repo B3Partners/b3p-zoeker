@@ -34,12 +34,12 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 public class ZoekAttribuut extends Attribuut {
 
-    public static final String SELECT_CONTROL = "selectControle";
-    public static final String RADIO_CONTROL = "radioControle";
-    public static final String TEXT_CONTROL = "textControle";
-    public static final String TEXTAREA_CONTROL = "textareaControle";
+    public static final int SELECT_CONTROL = 1;
+    public static final int TEXT_CONTROL = 2;
+    public static final int RADIO_CONTROL = 3;
+    public static final int TEXTAREA_CONTROL = 4;
 
-    private String inputControleType = TEXT_CONTROL;
+    private Integer inputtype = TEXT_CONTROL;
     /**
      * inputControleSize betekent afh van controle een van de volgende dingen
      * text: aantal karakters breed
@@ -48,7 +48,7 @@ public class ZoekAttribuut extends Attribuut {
      * radio: aantal regels in scroll div
      * <=0 betekent niet gedefinieerd
      */
-    private int inputControleSize = 0;
+    private Integer inputsize = 0;
 
     /**
      * Er is een zoekconfiguratie nodig voor het vullen van de inputlijst
@@ -60,6 +60,14 @@ public class ZoekAttribuut extends Attribuut {
 
     public ZoekAttribuut(Integer id, String naam, String attribuutnaam, String label, Integer type, Integer volgorde) {
         super(id, naam, attribuutnaam, label, type, volgorde);
+    }
+
+    public ZoekAttribuut(Integer id, String naam, String attribuutnaam,
+            String label, Integer type, Integer volgorde, Integer controlType, Integer controlSize) {
+
+        super(id, naam, attribuutnaam, label, type, volgorde);
+        this.inputtype = controlType;
+        this.inputsize = controlSize;
     }
 
     public static ZoekAttribuut[] setToZoekVeldenArray(Set set) {
@@ -82,38 +90,26 @@ public class ZoekAttribuut extends Attribuut {
         json.put("label", getLabel());
         json.put("type", getType());
         json.put("volgorde", getVolgorde());
-        json.put("inputControleType", getInputControleType());
-        json.put("inputControleSize", getInputControleSize());
+        json.put("inputType", getInputtype());
+        json.put("inputSize", getInputsize());
         json.put("inputListZoekConfiguratie", getInputListZoekConfiguratie());
         return json;
     }
 
-    /**
-     * @return the inputControleType
-     */
-    public String getInputControleType() {
-        return inputControleType;
+    public Integer getInputsize() {
+        return inputsize;
     }
 
-    /**
-     * @param inputControleType the inputControleType to set
-     */
-    public void setInputControleType(String inputControleType) {
-        this.inputControleType = inputControleType;
+    public void setInputsize(Integer inputsize) {
+        this.inputsize = inputsize;
     }
 
-    /**
-     * @return the inputControleSize
-     */
-    public int getInputControleSize() {
-        return inputControleSize;
+    public Integer getInputtype() {
+        return inputtype;
     }
 
-    /**
-     * @param inputControleSize the inputControleSize to set
-     */
-    public void setInputControleSize(int inputControleSize) {
-        this.inputControleSize = inputControleSize;
+    public void setInputtype(Integer inputtype) {
+        this.inputtype = inputtype;
     }
 
    /**
