@@ -62,14 +62,14 @@ public class ZoekAttribuut extends Attribuut {
         super(id, naam, attribuutnaam, label, type, volgorde);
     }
 
-    public ZoekAttribuut(Integer id, String naam, String attribuutnaam,
-            String label, Integer type, Integer volgorde, Integer controlType, Integer controlSize) {
-
-        super(id, naam, attribuutnaam, label, type, volgorde);
-        this.inputtype = controlType;
-        this.inputsize = controlSize;
-    }
-
+//    public ZoekAttribuut(Integer id, String naam, String attribuutnaam,
+//            String label, Integer type, Integer volgorde, Integer controlType, Integer controlSize) {
+//
+//        super(id, naam, attribuutnaam, label, type, volgorde);
+//        this.inputtype = controlType;
+//        this.inputsize = controlSize;
+//    }
+//
     public static ZoekAttribuut[] setToZoekVeldenArray(Set set) {
         return (ZoekAttribuut[]) set.toArray(new ZoekAttribuut[set.size()]);
     }
