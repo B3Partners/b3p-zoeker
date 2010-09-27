@@ -23,6 +23,7 @@
         <many-to-one class="nl.b3p.zoeker.configuratie.ZoekConfiguratie" name="zoekConfiguratie" column="zoekconfiguratie" lazy="false"/>
         <property name="inputtype"/>
         <property name="inputsize"/>
+        <many-to-one class="nl.b3p.zoeker.configuratie.ZoekConfiguratie" name="inputzoekconfiguratie" column="inputzoekconfiguratie" lazy="false"/>
     </class>
     <class name="nl.b3p.zoeker.configuratie.ResultaatAttribuut" table="resultaatveld">
     <id name="id">

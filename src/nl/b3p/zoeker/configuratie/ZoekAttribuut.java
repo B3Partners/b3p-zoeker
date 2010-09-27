@@ -51,9 +51,9 @@ public class ZoekAttribuut extends Attribuut {
     private Integer inputsize = 0;
 
     /**
-     * Er is een zoekconfiguratie nodig voor het vullen van de inputlijst
+     * Er is een zoekconfiguratie nodig voor het vullen van de opzoeklijst
      */
-    private ZoekConfiguratie inputListZoekConfiguratie = null;
+    private ZoekConfiguratie inputzoekconfiguratie = null;
 
     public ZoekAttribuut() {
     }
@@ -92,7 +92,10 @@ public class ZoekAttribuut extends Attribuut {
         json.put("volgorde", getVolgorde());
         json.put("inputType", getInputtype());
         json.put("inputSize", getInputsize());
-        json.put("inputListZoekConfiguratie", getInputListZoekConfiguratie());
+
+        if (getInputzoekconfiguratie() != null)
+            json.put("inputZoekConfiguratie", getInputzoekconfiguratie().getId());
+
         return json;
     }
 
@@ -112,21 +115,15 @@ public class ZoekAttribuut extends Attribuut {
         this.inputtype = inputtype;
     }
 
-   /**
-     * @return the inputListZoekConfiguratie
-     */
-    public ZoekConfiguratie getInputListZoekConfiguratie() {
-        return inputListZoekConfiguratie;
+    public ZoekConfiguratie getInputzoekconfiguratie() {
+        return inputzoekconfiguratie;
     }
 
-    /**
-     * @param inputListZoekConfiguratie the inputListZoekConfiguratie to set
-     */
-    public void setInputListZoekConfiguratie(ZoekConfiguratie inputListZoekConfiguratie) {
-        this.inputListZoekConfiguratie = inputListZoekConfiguratie;
+    public void setInputzoekconfiguratie(ZoekConfiguratie inputzoekconfiguratie) {
+        this.inputzoekconfiguratie = inputzoekconfiguratie;
     }
 
-     static FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(GeoTools.getDefaultHints());
+    static FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(GeoTools.getDefaultHints());
 
     public static void main(String[] args) throws IOException, Exception {
 //        Bron b = new Bron(0, "buurten", "http://x5.b3p.nl/cgi-bin/mapserv_fwtools?map=/srv/maps/kaartenbalie.map&", null, null, 0);
