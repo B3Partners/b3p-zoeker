@@ -45,12 +45,12 @@ public class ZoekConfiguratie {
      * De cachedInputList wordt via een caching mechanisme tijdens de configuratie
      * in een hulptabel bij deze zoekconfiguratie geladen.
      */
-    private Set<Map> cachedResultList = new HashSet();
+    private static Set<Map> cachedResultList = new HashSet();
     /**
      * cachedResultList geeft aan dat de lijst klaar is voor gebruik.
      * Alleen toepasselijk bij niet-dynamische lijsten.
      */
-    private boolean cachedResultListReady = false;
+    private static boolean cachedResultListReady = false;
     /**
      * Als een lijst dynamisch is, dan wordt de lijst bij elke vraag
      * weer opnieuw opgevraagd. Niet-dynamische lijsten, dus statisch,
@@ -260,29 +260,29 @@ public class ZoekConfiguratie {
     /**
      * @return the cachedResultList
      */
-    public Set<Map> getCachedResultList() {
+    public static Set<Map> getCachedResultList() {
         return cachedResultList;
     }
 
     /**
      * @param cachedResultList the cachedResultList to set
      */
-    public void setCachedResultList(Set<Map> cachedResultList) {
-        this.cachedResultList = cachedResultList;
+    public static void setCachedResultList(Set<Map> crl) {
+        cachedResultList = crl;
     }
 
     /**
      * @return the cachedResultListReady
      */
-    public boolean isCachedResultListReady() {
+    public static boolean isCachedResultListReady() {
         return cachedResultListReady;
     }
 
     /**
      * @param cachedResultListReady the cachedResultListReady to set
      */
-    public void setCachedResultListReady(boolean cachedResultListReady) {
-        this.cachedResultListReady = cachedResultListReady;
+    public static void setCachedResultListReady(boolean crlReady) {
+        cachedResultListReady = crlReady;
     }
 
     /**

@@ -120,14 +120,14 @@ public class Zoeker {
         if (zc == null || searchStrings == null) {
             return results;
         }
-        if (!zc.isResultListDynamic() && zc.isCachedResultListReady()) {
+        if (!zc.isResultListDynamic() && ZoekConfiguratie.isCachedResultListReady()) {
             /**
              * zoekresultaten worden uit cache gehaald.
              */
             throw new NotImplementedException("Cache not implemented yet.");
         }
         Bron bron = zc.getBron();
-        ArrayList<ZoekResultaat> zoekResultaten = new ArrayList(results);
+        List<ZoekResultaat> zoekResultaten = new ArrayList(results);
         DataStore ds = null;
         try {
             ds = getDataStore(bron);
@@ -263,6 +263,16 @@ public class Zoeker {
                 ds.dispose();
             }
         }
+
+        if (!zc.isResultListDynamic() && !ZoekConfiguratie.isCachedResultListReady()) {
+            /**
+             * zoekresultaten worden in cache gezet.
+             * per zoekstrings in static map
+             */
+            log.debug("Cache not implemented yet.");
+//            throw new NotImplementedException("Cache not implemented yet.");
+        }
+
         return zoekResultaten;
     }
     public static List getZoekConfiguraties() {

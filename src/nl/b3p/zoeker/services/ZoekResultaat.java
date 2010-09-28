@@ -182,14 +182,19 @@ public class ZoekResultaat implements Comparable {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof ZoekResultaat) {
-            ZoekResultaat z = (ZoekResultaat) o;
-            if (this.getId() != null && z.getId() != null) {
-                return this.getId().equals(z.getId());
-            }
+        if (this.compareTo(o) == 0) {
+            return true;
         }
         return false;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 89 * hash + (this.attributen != null ? this.attributen.hashCode() : 0);
+        return hash;
+    }
+
     /**
      * Compares o with this zoekresultaat
      * @param o see compare interface
@@ -199,48 +204,93 @@ public class ZoekResultaat implements Comparable {
         //if not instance of zoekresultaat this wins.
         if (!(o instanceof ZoekResultaat)) {
             return 1;
-        } else {            
-            ZoekResultaat zoekResultaat = (ZoekResultaat) o;
-            ArrayList<ZoekResultaatAttribuut> zAttributen = zoekResultaat.getAttributen();
-            int compareResult = 0;
-            //walk over all attributes and compare the attributes with type = 'TOON_TYPE';
-            for (int i = 0; i < this.attributen.size() && compareResult == 0; i++) {
-                ZoekResultaatAttribuut thisZra = this.attributen.get(i);
-                //only compare if type = TOON_TYPE (these will be displayed)
-                if (thisZra.getType().equals(Attribuut.TOON_TYPE)) {
-                    for (int z = 0; z < zAttributen.size(); z++) {
-                        ZoekResultaatAttribuut zra = zAttributen.get(z);
-                        //if the names are the same do a compare
-                        if (thisZra.getAttribuutnaam() != null && zra.getAttribuutnaam() != null && thisZra.getAttribuutnaam().equals(zra.getAttribuutnaam())) {
-                            if (thisZra.getWaarde() == null) {
-                                compareResult = -1;
-                            } else if (zra.getWaarde() == null) {
-                                compareResult = 1;
-                            } else if (thisZra.getWaarde() instanceof Comparable) {
-                                //most services give the numbers in string format. Try to numberFormat the strings and then compare
-                                boolean NaN = false;
-                                if (thisZra.getWaarde() instanceof String && zra.getWaarde() instanceof String){
-                                    try {
-                                        Double thisD = new Double(thisZra.getWaarde().toString());
-                                        Double d = new Double(zra.getWaarde().toString());
-                                        compareResult = thisD.compareTo(d);
-                                    } catch (NumberFormatException nfe) {
-                                        NaN = true;
-                                    }
-                                }
-                                if (NaN) {
-                                    compareResult = ((Comparable) thisZra.getWaarde()).compareTo(zra.getWaarde());
-                                }
-                            } else {
-                                compareResult = thisZra.getWaarde().toString().compareToIgnoreCase(zra.getWaarde().toString());
-                            }
-                            continue;
-                        }
-                    }
+        }
+        ZoekResultaat zoekResultaat = (ZoekResultaat) o;
+        ArrayList<ZoekResultaatAttribuut> zAttributen = zoekResultaat.getAttributen();
+        if (zAttributen == null) {
+            return 1;
+        }
+        if (this.attributen == null) {
+            return -1;
+        }
+        if (this.attributen.size() != zAttributen.size()) {
+            return 1;
+        }
+
+        //walk over all attributes and compare the attributes
+        for (int i = 0; i < this.attributen.size(); i++) {
+            ZoekResultaatAttribuut thisZra = this.attributen.get(i);
+
+            boolean found = false;
+            for (int z = 0; z < zAttributen.size(); z++) {
+                ZoekResultaatAttribuut zra = zAttributen.get(z);
+
+                if (compareAttributes(thisZra, zra) == 0) {
+                    found = true;
+                    break;
                 }
             }
-            return compareResult;
+            if (!found) {
+                return 1;
+            }
         }
+        return 0;
+    }
+
+    private int compareAttributes(ZoekResultaatAttribuut thisZra, ZoekResultaatAttribuut zra) {
+        if (zra.getType() == null && thisZra.getType() != null) {
+            return 1;
+        }
+        if (thisZra.getType() == null) {
+            return -1;
+        }
+        if (zra.getType() == null && thisZra.getType() == null) {
+            return 0;
+        }
+        if (zra.getAttribuutnaam() == null && thisZra.getAttribuutnaam() != null) {
+            return 1;
+        }
+        if (thisZra.getAttribuutnaam() == null) {
+            return -1;
+        }
+        if (zra.getAttribuutnaam() == null && thisZra.getAttribuutnaam() == null) {
+            return 0;
+        }
+        if (!thisZra.getType().equals(zra.getType())) {
+            return 1;
+        }
+        //only compare if type = TOON_TYPE (these will be displayed)
+        if (!thisZra.getType().equals(Attribuut.TOON_TYPE)) {
+            return 0;
+        }
+
+        if (thisZra.getAttribuutnaam().equals(zra.getAttribuutnaam())) {
+            if (thisZra.getWaarde() == null) {
+                return -1;
+            } else if (zra.getWaarde() == null) {
+                return 1;
+            } else if (thisZra.getWaarde() instanceof Comparable) {
+                //most services give the numbers in string format. Try to numberFormat the strings and then compare
+                boolean NaN = false;
+                if (thisZra.getWaarde() instanceof String && zra.getWaarde() instanceof String) {
+                    try {
+                        Double thisD = new Double(thisZra.getWaarde().toString());
+                        Double d = new Double(zra.getWaarde().toString());
+                        return thisD.compareTo(d);
+                    } catch (NumberFormatException nfe) {
+                        NaN = true;
+                    }
+                }
+                if (NaN) {
+                    return ((Comparable) thisZra.getWaarde()).compareTo(zra.getWaarde());
+                } else {
+                    return thisZra.getWaarde().toString().compareToIgnoreCase(zra.getWaarde().toString());
+                }
+            } else {
+                return thisZra.getWaarde().toString().compareToIgnoreCase(zra.getWaarde().toString());
+            }
+        }
+        return 1;
     }
 
     public ZoekConfiguratie getZoekConfiguratie() {

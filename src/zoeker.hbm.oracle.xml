@@ -53,6 +53,7 @@
             </generator>
         </id>
         <property name="naam"/>
+        <property name="resultListDynamic" column="resultlistdynamic"/>
         <property column="featuretype" name="featureType"/>
         <set name="zoekVelden" lazy="false" cascade="all-delete-orphan" order-by="volgorde">
             <key column="zoekconfiguratie"/>
