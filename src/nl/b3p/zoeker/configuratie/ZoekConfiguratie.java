@@ -4,10 +4,16 @@
  */
 package nl.b3p.zoeker.configuratie;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import nl.b3p.zoeker.services.ZoekResultaat;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,11 +23,12 @@ import org.json.JSONObject;
  * @author Roy
  */
 public class ZoekConfiguratie {
+
+    public static final String LIFECYCLE_CACHE_PARAM = "cachelifecycle";
     /*
      * String[] featureTypes= {"app:Plangebied"};
      * String[] searchPropertys={"app:overheidscode"};
      */
-
     private Integer id = null;
     // de te tonen search naam.
     private String naam = null;
@@ -35,22 +42,13 @@ public class ZoekConfiguratie {
     private ZoekConfiguratie parentZoekConfiguratie = null;
     // bron
     private Bron parentBron = null;
-
-
     /**
-     * cachedResultList bevat alle resultaten die de zoekconfiguratie kan hebben.
+     * cachedResultMap bevat alle resultaten die de zoekconfiguratie kan hebben.
      * Het is een Map met de resultaatvelden.
      * De applicatie bepaalt of de resultaten opgehaald worden of
-     * dat de cachedResultList wordt gebruikt.
-     * De cachedInputList wordt via een caching mechanisme tijdens de configuratie
-     * in een hulptabel bij deze zoekconfiguratie geladen.
+     * dat de cachedResultMap wordt gebruikt.
      */
-    private static Set<Map> cachedResultList = new HashSet();
-    /**
-     * cachedResultList geeft aan dat de lijst klaar is voor gebruik.
-     * Alleen toepasselijk bij niet-dynamische lijsten.
-     */
-    private static boolean cachedResultListReady = false;
+    private static Map<List<String>, CachedResult> cachedResultMap = new HashMap();
     /**
      * Als een lijst dynamisch is, dan wordt de lijst bij elke vraag
      * weer opnieuw opgevraagd. Niet-dynamische lijsten, dus statisch,
@@ -58,7 +56,6 @@ public class ZoekConfiguratie {
      * wordt gehandeld alsof er geen lijst is.
      */
     private boolean resultListDynamic = true;
-
 
     public ZoekConfiguratie() {
     }
@@ -258,34 +255,6 @@ public class ZoekConfiguratie {
     }
 
     /**
-     * @return the cachedResultList
-     */
-    public static Set<Map> getCachedResultList() {
-        return cachedResultList;
-    }
-
-    /**
-     * @param cachedResultList the cachedResultList to set
-     */
-    public static void setCachedResultList(Set<Map> crl) {
-        cachedResultList = crl;
-    }
-
-    /**
-     * @return the cachedResultListReady
-     */
-    public static boolean isCachedResultListReady() {
-        return cachedResultListReady;
-    }
-
-    /**
-     * @param cachedResultListReady the cachedResultListReady to set
-     */
-    public static void setCachedResultListReady(boolean crlReady) {
-        cachedResultListReady = crlReady;
-    }
-
-    /**
      * @return the resultListDynamic
      */
     public boolean isResultListDynamic() {
@@ -298,4 +267,45 @@ public class ZoekConfiguratie {
     public void setResultListDynamic(boolean resultListDynamic) {
         this.resultListDynamic = resultListDynamic;
     }
+
+    public static void setCachedResultList(ZoekConfiguratie zc,
+            List<ZoekResultaat> resultList, String[] searchStrings,
+            Integer maxResults) {
+
+        cleanUpCache();
+        if (zc.isResultListDynamic()) {
+            return;
+        }
+        CachedResult cr = new CachedResult(zc, resultList, searchStrings, maxResults);
+        cachedResultMap.put(Arrays.asList(searchStrings), cr);
+    }
+
+    public static List<ZoekResultaat> getCachedResultList(ZoekConfiguratie zc,
+            String[] searchStrings, Integer maxResults) {
+
+        cleanUpCache();
+        CachedResult cr = cachedResultMap.get(Arrays.asList(searchStrings));
+        if (cr != null) {
+            return cr.getCachedResultList(zc, searchStrings, maxResults);
+        }
+        return null;
+    }
+
+    protected static void cleanUpCache() {
+        Set<List<String>> keys = cachedResultMap.keySet();
+        if (keys == null) {
+            return;
+        }
+        List<List<String>> remKeys = new ArrayList<List<String>>();
+        for (List<String> key : keys) {
+            CachedResult cr = cachedResultMap.get(key);
+            if (cr.isExpired()) {
+                remKeys.add(key);
+            }
+        }
+        for (List<String> remKey : remKeys) {
+            cachedResultMap.remove(remKey);
+        }
+    }
+
 }

@@ -52,10 +52,10 @@ import org.opengis.filter.FilterFactory2;
 public class Zoeker {
 
     private static final int topMaxResults = 1000;
-    private static final Log log = LogFactory.getLog(Zoeker.class);    
-    private static final SimpleDateFormat sdf=new SimpleDateFormat("dd-MM-yyyy",new Locale("NL"));
+    private static final Log log = LogFactory.getLog(Zoeker.class);
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", new Locale("NL"));
 
-    public List zoek(Integer[] zoekConfiguratieIds, String searchStrings[], Integer maxResults) {        
+    public List zoek(Integer[] zoekConfiguratieIds, String searchStrings[], Integer maxResults) {
         List<ZoekResultaat> results = new ArrayList();
         Object identity = null;
         try {
@@ -64,14 +64,15 @@ public class Zoeker {
             EntityTransaction tx = em.getTransaction();
             tx.begin();
             try {
-                String queryString="from ZoekConfiguratie z where z.id IN (";
+                String queryString = "from ZoekConfiguratie z where z.id IN (";
                 for (int i = 0; i < zoekConfiguratieIds.length; i++) {
-                    if (i!=0)
-                        queryString+=",";
-                    queryString+=zoekConfiguratieIds[i];
+                    if (i != 0) {
+                        queryString += ",";
+                    }
+                    queryString += zoekConfiguratieIds[i];
                 }
-                queryString+=") order by z.parentBron.volgorde";
-                List zoekconfiguraties=em.createQuery(queryString).getResultList();
+                queryString += ") order by z.parentBron.volgorde";
+                List zoekconfiguraties = em.createQuery(queryString).getResultList();
                 for (int i = 0; i < zoekconfiguraties.size(); i++) {
                     ZoekConfiguratie zc = (ZoekConfiguratie) zoekconfiguraties.get(i);
                     results = zoekMetConfiguratie(zc, cleanStringArray(searchStrings), maxResults, results);
@@ -120,21 +121,30 @@ public class Zoeker {
         if (zc == null || searchStrings == null) {
             return results;
         }
-        if (!zc.isResultListDynamic() && ZoekConfiguratie.isCachedResultListReady()) {
+
+        List<ZoekResultaat> zoekResultaten = new ArrayList(results);
+        if (!zc.isResultListDynamic()) {
             /**
              * zoekresultaten worden uit cache gehaald.
              */
-            throw new NotImplementedException("Cache not implemented yet.");
+            List<ZoekResultaat> cachedResultaten = ZoekConfiguratie.getCachedResultList(zc, searchStrings, maxResults);
+            if (cachedResultaten != null && !cachedResultaten.isEmpty()) {
+                zoekResultaten.addAll(cachedResultaten);
+                Collections.sort(zoekResultaten);
+                log.debug("Cached list used!");
+                return zoekResultaten;
+            }
+            log.debug("Cached list not found!");
         }
+
         Bron bron = zc.getBron();
-        List<ZoekResultaat> zoekResultaten = new ArrayList(results);
         DataStore ds = null;
         try {
             ds = getDataStore(bron);
             if (ds != null) {
                 FeatureCollection fc = null;
                 //FeatureReader reader = null;
-                FeatureIterator fi=null;
+                FeatureIterator fi = null;
                 try {
                     if (ds instanceof WFS_1_0_0_DataStore) {
                         WFS_1_0_0_DataStore wfs100ds = (WFS_1_0_0_DataStore) ds;
@@ -154,20 +164,20 @@ public class Zoeker {
                     }
                     Iterator it = zc.getZoekVelden().iterator();
                     List filters = new ArrayList();
-                    
+
                     //maak de filters
-                    try{
+                    try {
                         fs.getSchema();
-                    }catch (NullPointerException npe){
-                        log.error("Kan het schema voor de zoekconfiguratie niet ophalen",npe);
+                    } catch (NullPointerException npe) {
+                        log.error("Kan het schema voor de zoekconfiguratie niet ophalen", npe);
                         throw npe;
                     }
                     ArrayList properties = new ArrayList();
                     for (int i = 0; it.hasNext(); i++) {
                         ZoekAttribuut zoekVeld = (ZoekAttribuut) it.next();
-                        Filter filter= createFilter(ZoekAttribuut.setToZoekVeldenArray(zc.getZoekVelden()),searchStrings,i,ds,ff,fs.getSchema());
-                        if (filter!=null){
-                            filters.add(filter);                            
+                        Filter filter = createFilter(ZoekAttribuut.setToZoekVeldenArray(zc.getZoekVelden()), searchStrings, i, ds, ff, fs.getSchema());
+                        if (filter != null) {
+                            filters.add(filter);
                         }
                     }
                     //maak een and filter of een single filter aan de hand van het aantal filters
@@ -201,10 +211,10 @@ public class Zoeker {
                     //Haal de featureCollection met de query op.
                     fc = fs.getFeatures(query);
                     //Maak de FeatureIterator aan (hier wordt het daad werkelijke verzoek gedaan.
-                    fi=fc.features();
+                    fi = fc.features();
                     //doorloop de features en maak de resultaten.
                     while (fi.hasNext()) {
-                        Feature f = fi.next();                        
+                        Feature f = fi.next();
                         ZoekResultaat p = new ZoekResultaat();
                         Iterator rit = zc.getResultaatVelden().iterator();
                         while (rit.hasNext()) {
@@ -227,13 +237,13 @@ public class Zoeker {
                         }
                         if (f.getType().getGeometryDescriptor() != null && f.getDefaultGeometryProperty() != null && f.getDefaultGeometryProperty().getBounds() != null) {
                             p.setBbox(f.getDefaultGeometryProperty().getBounds());
-                        }else{
+                        } else {
                             log.debug("Can't set Bbox for result. No bounds set for feature by the server. And no Geometry given or configured as result in the search configuration");
                         }
                         if (!zoekResultaten.contains(p)) {
                             zoekResultaten.add(p);
                         }
-                        
+
                     }
                 } catch (SchemaNotFoundException snfe) {
                     String typenames = "";
@@ -244,11 +254,11 @@ public class Zoeker {
                         }
                         typenames += tn[i];
                     }
-                    log.error("Feature "+zc.getFeatureType()+" niet bekend bij bron, mogelijke features: " + typenames, snfe);
+                    log.error("Feature " + zc.getFeatureType() + " niet bekend bij bron, mogelijke features: " + typenames, snfe);
                 } catch (Exception e) {
                     log.error("Fout bij laden plannen: ", e);
                 } finally {
-                    if (fc!=null && fi!=null){
+                    if (fc != null && fi != null) {
                         fc.close(fi);
                     }
 
@@ -264,27 +274,25 @@ public class Zoeker {
             }
         }
 
-        if (!zc.isResultListDynamic() && !ZoekConfiguratie.isCachedResultListReady()) {
-            /**
-             * zoekresultaten worden in cache gezet.
-             * per zoekstrings in static map
-             */
-            log.debug("Cache not implemented yet.");
-//            throw new NotImplementedException("Cache not implemented yet.");
+        Collections.sort(zoekResultaten);
+        if (!zc.isResultListDynamic()) {
+            ZoekConfiguratie.setCachedResultList(zc, zoekResultaten, searchStrings, maxResults);
+            log.debug("Cache filled.");
         }
 
         return zoekResultaten;
     }
+
     public static List getZoekConfiguraties() {
         Object identity = null;
-        List returnList=null;
+        List returnList = null;
         try {
             identity = MyEMFDatabase.createEntityManager(MyEMFDatabase.MAIN_EM);
             EntityManager em = MyEMFDatabase.getEntityManager(MyEMFDatabase.MAIN_EM);
             EntityTransaction tx = em.getTransaction();
             tx.begin();
             try {
-                returnList= em.createQuery("from ZoekConfiguratie z").getResultList();
+                returnList = em.createQuery("from ZoekConfiguratie z").getResultList();
                 tx.commit();
             } catch (Exception ex) {
                 log.error("Exception occured" + (tx.isActive() ? ", rollback" : "tx not active"), ex);
@@ -309,61 +317,64 @@ public class Zoeker {
      * @throws java.io.IOException
      * @deprecated: use b.toDatastore();
      */
-     public static DataStore getDataStore(Bron b) throws IOException, Exception {
+    public static DataStore getDataStore(Bron b) throws IOException, Exception {
         return b.toDatastore();
     }
+
     /**
      * Maakt het filter voor het zoekveld met als value het zoek criterium.
      * Geef de alle zoekvelden mee en alle ingevulde strings omdat sommige zoekvelden afhankelijk kunnen zijn van elkaar.
      */
-    private Filter createFilter(ZoekAttribuut[] zoekVelden, String[] searchStrings, int index, DataStore ds,FilterFactory2 ff, FeatureType ft) throws Exception {
-        String searchString=searchStrings[index];
-        if (searchString==null || searchString.length()==0)
+    private Filter createFilter(ZoekAttribuut[] zoekVelden, String[] searchStrings, int index, DataStore ds, FilterFactory2 ff, FeatureType ft) throws Exception {
+        String searchString = searchStrings[index];
+        if (searchString == null || searchString.length() == 0) {
             return null;
-        ZoekAttribuut zoekVeld=zoekVelden[index];
-        Filter filter=null;
-        if(zoekVeld.getType()==Attribuut.GEOMETRY_TYPE){
+        }
+        ZoekAttribuut zoekVeld = zoekVelden[index];
+        Filter filter = null;
+        if (zoekVeld.getType() == Attribuut.GEOMETRY_TYPE) {
             WKTReader wktreader = new WKTReader(new GeometryFactory(new PrecisionModel(), 28992));
             try {
                 Geometry geom = wktreader.read(searchString);
                 //zijn er nog zoekAttributen ingevuld die betrekking hebben op de geometry (zoals straal)
-                for (int i=0; i < zoekVelden.length; i++){
+                for (int i = 0; i < zoekVelden.length; i++) {
                     //skip voor dit zoekveld
-                    if (i==index)
+                    if (i == index) {
                         continue;
+                    }
                     //bij straal maak een buffer.
-                    if (zoekVelden[i].getType()==Attribuut.STRAAL_TYPE &&searchStrings[i]!=null && searchStrings[i].length()>0){
-                        try{
-                            double straal=Double.parseDouble(searchStrings[i]);
-                            geom=geom.buffer(straal);
-                        }catch(NumberFormatException nfe){
-                            log.error("Ingevulde zoekopdracht "+zoekVelden[i].getNaam()+ "moet een nummer zijn",nfe);
+                    if (zoekVelden[i].getType() == Attribuut.STRAAL_TYPE && searchStrings[i] != null && searchStrings[i].length() > 0) {
+                        try {
+                            double straal = Double.parseDouble(searchStrings[i]);
+                            geom = geom.buffer(straal);
+                        } catch (NumberFormatException nfe) {
+                            log.error("Ingevulde zoekopdracht " + zoekVelden[i].getNaam() + "moet een nummer zijn", nfe);
                         }
                     }
                 }
-                filter=ff.within(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(geom));
-            }catch(Exception e){
-                log.error("Fout bij parsen wkt geometry",e);
+                filter = ff.within(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(geom));
+            } catch (Exception e) {
+                log.error("Fout bij parsen wkt geometry", e);
             }
-        }else if (zoekVeld.getType().intValue()==Attribuut.GROTER_DAN_TYPE){            
-            filter=ff.greaterOrEqual(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString));
-        }else if (zoekVeld.getType().intValue()==Attribuut.KLEINER_DAN_TYPE){            
-            filter=ff.lessOrEqual(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString));
-        }else if (zoekVeld.getType().intValue()==Attribuut.GELIJK_AAN_TYPE){
-            filter=ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString));
-        }else if (zoekVeld.isFilterMogelijk()){
+        } else if (zoekVeld.getType().intValue() == Attribuut.GROTER_DAN_TYPE) {
+            filter = ff.greaterOrEqual(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString));
+        } else if (zoekVeld.getType().intValue() == Attribuut.KLEINER_DAN_TYPE) {
+            filter = ff.lessOrEqual(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString));
+        } else if (zoekVeld.getType().intValue() == Attribuut.GELIJK_AAN_TYPE) {
+            filter = ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString));
+        } else if (zoekVeld.isFilterMogelijk()) {
             if (ds instanceof WFS_1_0_0_DataStore) {
-                if(propertyIsNumber(ft.getDescriptor(zoekVeld.getAttribuutnaam()))){
-                    filter=ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString));
-                }else{
-                    filter=ff.like(ff.property(zoekVeld.getAttribuutnaam()), searchString);
+                if (propertyIsNumber(ft.getDescriptor(zoekVeld.getAttribuutnaam()))) {
+                    filter = ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString));
+                } else {
+                    filter = ff.like(ff.property(zoekVeld.getAttribuutnaam()), searchString);
                 }
             } else {
                 if (searchString.length() > 0) {
-                    if(propertyIsNumber(ft.getDescriptor(zoekVeld.getAttribuutnaam()))){
-                        filter=ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString));
-                    }else{
-                        filter=ff.like( ff.property(zoekVeld.getAttribuutnaam()),searchString, "*", "?", "\\", false);
+                    if (propertyIsNumber(ft.getDescriptor(zoekVeld.getAttribuutnaam()))) {
+                        filter = ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString));
+                    } else {
+                        filter = ff.like(ff.property(zoekVeld.getAttribuutnaam()), searchString, "*", "?", "\\", false);
                     }
                 }
             }
@@ -372,9 +383,10 @@ public class Zoeker {
     }
 
     private boolean propertyIsNumber(PropertyDescriptor descriptor) {
-        if (descriptor==null || descriptor.getType()==null || descriptor.getType().getBinding()==null)
+        if (descriptor == null || descriptor.getType() == null || descriptor.getType().getBinding() == null) {
             return false;
-        if (descriptor.getType().getBinding()==Integer.class || descriptor.getType().getBinding()==Double.class || descriptor.getType().getBinding()==BigInteger.class){
+        }
+        if (descriptor.getType().getBinding() == Integer.class || descriptor.getType().getBinding() == Double.class || descriptor.getType().getBinding() == BigInteger.class) {
             return true;
         }
         return false;

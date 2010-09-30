@@ -221,23 +221,24 @@ public class ZoekResultaat implements Comparable {
         for (int i = 0; i < this.attributen.size(); i++) {
             ZoekResultaatAttribuut thisZra = this.attributen.get(i);
 
-            boolean found = false;
             for (int z = 0; z < zAttributen.size(); z++) {
                 ZoekResultaatAttribuut zra = zAttributen.get(z);
 
-                if (compareAttributes(thisZra, zra) == 0) {
-                    found = true;
+                if (compareAttributeNames(thisZra, zra) == 0) {
+                    //attr names gelijk dus verder vergelijken op waarde
+                    int valueCompare = compareAttributeValues(thisZra, zra);
+                    if (valueCompare != 0) {
+                        return valueCompare;
+                    }
+                    // dit attr heeft zelfde waarde, volgende attr
                     break;
                 }
-            }
-            if (!found) {
-                return 1;
             }
         }
         return 0;
     }
 
-    private int compareAttributes(ZoekResultaatAttribuut thisZra, ZoekResultaatAttribuut zra) {
+    private static int compareAttributeNames(ZoekResultaatAttribuut thisZra, ZoekResultaatAttribuut zra) {
         if (zra.getType() == null && thisZra.getType() != null) {
             return 1;
         }
@@ -264,33 +265,33 @@ public class ZoekResultaat implements Comparable {
             return 0;
         }
 
-        if (thisZra.getAttribuutnaam().equals(zra.getAttribuutnaam())) {
-            if (thisZra.getWaarde() == null) {
-                return -1;
-            } else if (zra.getWaarde() == null) {
-                return 1;
-            } else if (thisZra.getWaarde() instanceof Comparable) {
-                //most services give the numbers in string format. Try to numberFormat the strings and then compare
-                boolean NaN = false;
-                if (thisZra.getWaarde() instanceof String && zra.getWaarde() instanceof String) {
-                    try {
-                        Double thisD = new Double(thisZra.getWaarde().toString());
-                        Double d = new Double(zra.getWaarde().toString());
-                        return thisD.compareTo(d);
-                    } catch (NumberFormatException nfe) {
-                        NaN = true;
-                    }
+        return thisZra.getAttribuutnaam().compareTo(zra.getAttribuutnaam());
+    }
+
+    private static int compareAttributeValues(ZoekResultaatAttribuut thisZra, ZoekResultaatAttribuut zra) {
+        if (thisZra.getWaarde() == null) {
+            return -1;
+        } else if (zra.getWaarde() == null) {
+            return 1;
+        } else if (thisZra.getWaarde() instanceof Comparable) {
+            //most services give the numbers in string format. Try to numberFormat the strings and then compare
+            boolean NaN = false;
+            if (thisZra.getWaarde() instanceof String && zra.getWaarde() instanceof String) {
+                try {
+                    Double thisD = new Double(thisZra.getWaarde().toString());
+                    Double d = new Double(zra.getWaarde().toString());
+                    return thisD.compareTo(d);
+                } catch (NumberFormatException nfe) {
+                    NaN = true;
                 }
-                if (NaN) {
-                    return ((Comparable) thisZra.getWaarde()).compareTo(zra.getWaarde());
-                } else {
-                    return thisZra.getWaarde().toString().compareToIgnoreCase(zra.getWaarde().toString());
-                }
+            }
+            if (NaN) {
+                return ((Comparable) thisZra.getWaarde()).compareTo(zra.getWaarde());
             } else {
                 return thisZra.getWaarde().toString().compareToIgnoreCase(zra.getWaarde().toString());
             }
         }
-        return 1;
+        return thisZra.getWaarde().toString().compareToIgnoreCase(zra.getWaarde().toString());
     }
 
     public ZoekConfiguratie getZoekConfiguratie() {
