@@ -352,24 +352,18 @@ public class Zoeker {
         }else if (zoekVeld.getType().intValue()==Attribuut.GELIJK_AAN_TYPE){
             filter=ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString));
         }else if (zoekVeld.isFilterMogelijk()){
-            String wildeSearchString=null;
-            if(propertyIsNumber(ft.getDescriptor(zoekVeld.getAttribuutnaam()))){
-                wildeSearchString=searchString;
-            }else{
-                wildeSearchString="*"+searchString+"*";
-            }
             if (ds instanceof WFS_1_0_0_DataStore) {
                 if(propertyIsNumber(ft.getDescriptor(zoekVeld.getAttribuutnaam()))){
-                    filter=ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(wildeSearchString));
+                    filter=ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString));
                 }else{
-                    filter=ff.like(ff.property(zoekVeld.getAttribuutnaam()), wildeSearchString);
+                    filter=ff.like(ff.property(zoekVeld.getAttribuutnaam()), searchString);
                 }
             } else {
                 if (searchString.length() > 0) {
                     if(propertyIsNumber(ft.getDescriptor(zoekVeld.getAttribuutnaam()))){
-                        filter=ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(wildeSearchString));
+                        filter=ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString));
                     }else{
-                        filter=ff.like( ff.property(zoekVeld.getAttribuutnaam()),wildeSearchString, "*", "?", "\\", false);
+                        filter=ff.like( ff.property(zoekVeld.getAttribuutnaam()),searchString, "*", "?", "\\", false);
                     }
                 }
             }
