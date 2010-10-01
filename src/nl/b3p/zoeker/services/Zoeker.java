@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import nl.b3p.zoeker.configuratie.Attribuut;
@@ -24,7 +25,6 @@ import nl.b3p.zoeker.configuratie.ResultaatAttribuut;
 import nl.b3p.zoeker.configuratie.ZoekAttribuut;
 import nl.b3p.zoeker.configuratie.ZoekConfiguratie;
 import nl.b3p.zoeker.hibernate.MyEMFDatabase;
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geotools.data.DataStore;
@@ -51,7 +51,7 @@ import org.opengis.filter.FilterFactory2;
  */
 public class Zoeker {
 
-    private static final int topMaxResults = 1000;
+    private static final int topMaxResults = 100;
     private static final Log log = LogFactory.getLog(Zoeker.class);
     private static final SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", new Locale("NL"));
 
@@ -107,6 +107,46 @@ public class Zoeker {
         return sa;
     }
 
+    // staan alle resultaatvelden in de zoekvelden?
+    // zijn alle zoekvelden gelijk-aan-velden?
+    // ja en ja dan direct ZoekResultaat terugsturen.
+     protected ZoekResultaat resultaatInVraag(ZoekConfiguratie zc, String[] searchStrings) {
+       Set<ResultaatAttribuut> rvs = zc.getResultaatVelden();
+        Set<ZoekAttribuut> zvs = zc.getZoekVelden();
+        Integer gelijkAanType = new Integer(Attribuut.GELIJK_AAN_TYPE);
+        if (rvs != null && !rvs.isEmpty() && zvs != null && !zvs.isEmpty()
+                && zvs.size() == searchStrings.length) {
+            boolean allRvsAvailable = true;
+            ZoekResultaat p = new ZoekResultaat();
+            p.setZoekConfiguratie(zc);
+            for (ResultaatAttribuut rv : rvs) {
+
+                boolean foundRv = false;
+                int loop = 0;
+                for (ZoekAttribuut zv : zvs) {
+                    if (rv.getAttribuutnaam().equals(zv.getAttribuutnaam())
+                            && gelijkAanType.equals(zv.getType())) {
+
+                        ZoekResultaatAttribuut zra = new ZoekResultaatAttribuut(rv);
+                        zra.setWaarde(searchStrings[loop]);
+                        p.addAttribuut(zra);
+
+                        foundRv = true;
+                        break;
+                    }
+                    loop++;
+                }
+                if (!foundRv) {
+                    allRvsAvailable = false;
+                }
+            }
+            if (allRvsAvailable) {
+                return p;
+            }
+        }
+        return null;
+    }
+
     /**
      * Zoek moet configuratie (search Strings moet gelijk zijn aan aantal zoekvelden in de ZoekConfiguratie:
      * @param zc: ZoekConfiguratie waarmee gezocht moet worden
@@ -115,7 +155,7 @@ public class Zoeker {
      * @param results: De al gevonden resultaten (de nieuwe resultaten worden hier aan toegevoegd.
      */
     public List<ZoekResultaat> zoekMetConfiguratie(ZoekConfiguratie zc, String[] searchStrings, Integer maxResults, List<ZoekResultaat> results) {
-        if (maxResults == null || maxResults.intValue() == 0 || maxResults.intValue() > topMaxResults) {
+        if (maxResults == null || maxResults.intValue() == 0) {
             maxResults = topMaxResults;
         }
         if (zc == null || searchStrings == null) {
@@ -123,10 +163,17 @@ public class Zoeker {
         }
 
         List<ZoekResultaat> zoekResultaten = new ArrayList(results);
+        // Controleer of de zoekvelden al voldoende info bevatten om zonder
+        // nieuwe zoekactie de resultaatvelden te vullen
+        ZoekResultaat zr = resultaatInVraag(zc, searchStrings);
+        if (zr!=null) {
+            zoekResultaten.add(zr);
+            log.debug("Result found in request, no new search action!");
+            return zoekResultaten;
+        }
+
         if (!zc.isResultListDynamic()) {
-            /**
-             * zoekresultaten worden uit cache gehaald.
-             */
+            //zoekresultaten worden uit cache gehaald.
             List<ZoekResultaat> cachedResultaten = ZoekConfiguratie.getCachedResultList(zc, searchStrings, maxResults);
             if (cachedResultaten != null && !cachedResultaten.isEmpty()) {
                 zoekResultaten.addAll(cachedResultaten);
