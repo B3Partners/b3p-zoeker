@@ -1,5 +1,7 @@
 package nl.b3p.zoeker.configuratie;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import nl.b3p.zoeker.services.ZoekResultaat;
@@ -9,10 +11,9 @@ import nl.b3p.zoeker.services.ZoekResultaat;
  * @author Chris
  */
 class CachedResult {
-    
+
     public static final long LIFECYCLE_CACHE = 21600000l; //6 uur
     public static final int MAX_LIFECYCLE_CACHE_REQUEST = 28; // 1 week
-
     private ZoekConfiguratie zc;
     private List<ZoekResultaat> resultList;
     private String[] searchStrings;
@@ -84,5 +85,12 @@ class CachedResult {
         // finally return list
         numOfRequests++; // extend cache life
         return resultList;
+    }
+
+    public static List<String> createKey(ZoekConfiguratie zc, String[] searchStrings) {
+        List<String> key = new ArrayList();
+        key.add(zc.getId().toString());
+        key.addAll(Arrays.asList(searchStrings));
+        return key;
     }
 }

@@ -5,8 +5,6 @@
 package nl.b3p.zoeker.configuratie;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -277,14 +275,14 @@ public class ZoekConfiguratie {
             return;
         }
         CachedResult cr = new CachedResult(zc, resultList, searchStrings, maxResults);
-        cachedResultMap.put(Arrays.asList(searchStrings), cr);
+        cachedResultMap.put(CachedResult.createKey(zc, searchStrings), cr);
     }
 
     public static List<ZoekResultaat> getCachedResultList(ZoekConfiguratie zc,
             String[] searchStrings, Integer maxResults) {
 
         cleanUpCache();
-        CachedResult cr = cachedResultMap.get(Arrays.asList(searchStrings));
+        CachedResult cr = cachedResultMap.get(CachedResult.createKey(zc, searchStrings));
         if (cr != null) {
             return cr.getCachedResultList(zc, searchStrings, maxResults);
         }
@@ -307,5 +305,4 @@ public class ZoekConfiguratie {
             cachedResultMap.remove(remKey);
         }
     }
-
 }
