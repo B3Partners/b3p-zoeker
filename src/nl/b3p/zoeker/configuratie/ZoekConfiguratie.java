@@ -22,7 +22,7 @@ import org.json.JSONObject;
  */
 public class ZoekConfiguratie {
 
-    public static final String LIFECYCLE_CACHE_PARAM = "cachelifecycle";
+    public static final String FLUSH_CACHE_PARAM = "flushresultlistcache";
     /*
      * String[] featureTypes= {"app:Plangebied"};
      * String[] searchPropertys={"app:overheidscode"};
@@ -259,14 +259,18 @@ public class ZoekConfiguratie {
         return resultListDynamic;
     }
 
-    /**
+     /**
      * @param resultListDynamic the resultListDynamic to set
      */
     public void setResultListDynamic(boolean resultListDynamic) {
         this.resultListDynamic = resultListDynamic;
     }
 
-    public static void setCachedResultList(ZoekConfiguratie zc,
+    public static synchronized void flushCachedResultListCache() {
+        cachedResultMap = new HashMap();
+    }
+
+    public static synchronized void setCachedResultList(ZoekConfiguratie zc,
             List<ZoekResultaat> resultList, String[] searchStrings,
             Integer maxResults) {
 
@@ -278,7 +282,7 @@ public class ZoekConfiguratie {
         cachedResultMap.put(CachedResult.createKey(zc, searchStrings), cr);
     }
 
-    public static List<ZoekResultaat> getCachedResultList(ZoekConfiguratie zc,
+    public static synchronized List<ZoekResultaat> getCachedResultList(ZoekConfiguratie zc,
             String[] searchStrings, Integer maxResults) {
 
         cleanUpCache();
