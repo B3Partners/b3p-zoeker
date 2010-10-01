@@ -15,10 +15,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
-import org.geotools.data.oracle.OracleDataStoreFactory;
+import org.geotools.data.oracle.OracleNGDataStoreFactory;
 import org.geotools.data.ows.FeatureSetDescription;
 import org.geotools.data.ows.WFSCapabilities;
-import org.geotools.data.postgis.PostgisDataStoreFactory;
+import org.geotools.data.postgis.PostgisNGDataStoreFactory;
 import org.geotools.data.wfs.WFSDataStore;
 import org.geotools.data.wfs.WFSDataStoreFactory;
 import org.geotools.data.wfs.v1_0_0.WFS_1_0_0_DataStore;
@@ -222,11 +222,11 @@ public class Bron {
             if (schema != null) {
                 params.put("schema", schema);
             }
-            params.put("instance", instance);
+            params.put("database", instance);
             params.put("user", this.getGebruikersnaam());
             params.put("passwd", this.getWachtwoord());
             params.put("dbtype", "oracle");
-            return (new OracleDataStoreFactory()).createDataStore(params);
+            return (new OracleNGDataStoreFactory()).createDataStore(params);
         }
         if (checkType(TYPE_JDBC)) {
             //jdbc:postgresql://localhost:5432/edamvolendam_gis
@@ -248,16 +248,16 @@ public class Bron {
                     database = tokens[0];
                 }
             }
-            params.put(PostgisDataStoreFactory.DBTYPE.key, "postgis");
-            params.put(PostgisDataStoreFactory.HOST.key, host);
-            params.put(PostgisDataStoreFactory.PORT.key, port);
-            params.put(PostgisDataStoreFactory.SCHEMA.key, schema);
-            params.put(PostgisDataStoreFactory.DATABASE.key, database);
+            params.put(PostgisNGDataStoreFactory.DBTYPE.key, "postgis");
+            params.put(PostgisNGDataStoreFactory.HOST.key, host);
+            params.put(PostgisNGDataStoreFactory.PORT.key, port);
+            params.put(PostgisNGDataStoreFactory.SCHEMA.key, schema);
+            params.put(PostgisNGDataStoreFactory.DATABASE.key, database);
             if (this.getGebruikersnaam() != null) {
-                params.put(PostgisDataStoreFactory.USER.key, this.getGebruikersnaam());
+                params.put(PostgisNGDataStoreFactory.USER.key, this.getGebruikersnaam());
             }
             if (this.getWachtwoord() != null) {
-                params.put(PostgisDataStoreFactory.PASSWD.key, this.getWachtwoord());
+                params.put(PostgisNGDataStoreFactory.PASSWD.key, this.getWachtwoord());
             }
         }
         if (checkType(TYPE_WFS)) {
