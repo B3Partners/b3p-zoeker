@@ -217,15 +217,16 @@ public class Bron {
                 schema = this.getUrl().substring(lastIndex + 1, this.getUrl().length());
             }
             String instance = this.getUrl().substring(firstIndex, lastIndex);
-            params.put("host", host);
-            params.put("port", port);
+            params.put(OracleNGDataStoreFactory.HOST.key, host);
+            params.put(OracleNGDataStoreFactory.PORT.key, port);
             if (schema != null) {
-                params.put("schema", schema);
+                params.put(OracleNGDataStoreFactory.SCHEMA.key, schema);
             }
-            params.put("database", instance);
-            params.put("user", this.getGebruikersnaam());
-            params.put("passwd", this.getWachtwoord());
-            params.put("dbtype", "oracle");
+            params.put(OracleNGDataStoreFactory.DATABASE.key, instance);
+            params.put(OracleNGDataStoreFactory.USER.key, this.getGebruikersnaam());
+            params.put(OracleNGDataStoreFactory.PASSWD.key, this.getWachtwoord());
+            params.put(OracleNGDataStoreFactory.DBTYPE.key, "oracle");
+            params.put(OracleNGDataStoreFactory.EXPOSE_PK.key, Boolean.TRUE);
             return (new OracleNGDataStoreFactory()).createDataStore(params);
         }
         if (checkType(TYPE_JDBC)) {
@@ -259,6 +260,7 @@ public class Bron {
             if (this.getWachtwoord() != null) {
                 params.put(PostgisNGDataStoreFactory.PASSWD.key, this.getWachtwoord());
             }
+            params.put(PostgisNGDataStoreFactory.EXPOSE_PK, Boolean.TRUE);
         }
         if (checkType(TYPE_WFS)) {
             String url = this.getUrl();
