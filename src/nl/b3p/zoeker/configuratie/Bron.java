@@ -260,7 +260,7 @@ public class Bron {
             if (this.getWachtwoord() != null) {
                 params.put(PostgisNGDataStoreFactory.PASSWD.key, this.getWachtwoord());
             }
-            params.put(PostgisNGDataStoreFactory.EXPOSE_PK, Boolean.TRUE);
+            params.put(PostgisNGDataStoreFactory.EXPOSE_PK.key, Boolean.TRUE);
         }
         if (checkType(TYPE_WFS)) {
             String url = this.getUrl();
