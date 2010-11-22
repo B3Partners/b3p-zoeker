@@ -22,6 +22,9 @@ public class Attribuut {
     public final static int GROTER_DAN_TYPE=5;
     public final static int GELIJK_AAN_TYPE=6;
 
+    public final static int KLEINER_DAN_DATUM_TYPE=40;
+    public final static int GROTER_DAN_DATUM_TYPE=50;
+
     //typen die betrekking hebben op een van de andere typen.
     public final static int STRAAL_TYPE=100;
     
