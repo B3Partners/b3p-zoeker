@@ -13,6 +13,7 @@ import org.json.JSONObject;
  * @author beurs
  */
 public class Attribuut {
+    public final static int ALLEEN_TOON_TYPE=-1;
     public final static int GEEN_TYPE=0;
     public final static int ID_TYPE=1;
     public final static int TOON_TYPE=2;
@@ -24,6 +25,7 @@ public class Attribuut {
 
     public final static int KLEINER_DAN_DATUM_TYPE=40;
     public final static int GROTER_DAN_DATUM_TYPE=50;
+    public final static int GELIJK_AAN_DATUM_TYPE=60;
 
     //typen die betrekking hebben op een van de andere typen.
     public final static int STRAAL_TYPE=100;

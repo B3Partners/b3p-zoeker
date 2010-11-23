@@ -153,6 +153,7 @@ public class ZoekResultaat implements Comparable {
     public String getLabel() {
         String resultValue = "";
         ArrayList waarden = getWaarden(Attribuut.TOON_TYPE);
+        waarden.addAll(getWaarden(Attribuut.ALLEEN_TOON_TYPE));
         for (int i = 0; i < waarden.size(); i++) {
             if (resultValue.length() > 0) {
                 resultValue += " ";
