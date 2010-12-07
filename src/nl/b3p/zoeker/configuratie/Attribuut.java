@@ -28,6 +28,7 @@ public class Attribuut {
     public final static int GELIJK_AAN_DATUM_TYPE=60;
 
     //typen die betrekking hebben op een van de andere typen.
+    public final static int XY_COORD_TYPE=80;
     public final static int STRAAL_TYPE=100;
     
     private Integer id=null;

@@ -4,6 +4,7 @@
  */
 package nl.b3p.zoeker.services;
 
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.PrecisionModel;
@@ -57,6 +58,7 @@ public class Zoeker {
 
     public List zoek(Integer[] zoekConfiguratieIds, String searchStrings[], Integer maxResults) {
         List<ZoekResultaat> results = new ArrayList();
+
         Object identity = null;
         try {
             identity = MyEMFDatabase.createEntityManager(MyEMFDatabase.MAIN_EM);
@@ -76,6 +78,17 @@ public class Zoeker {
                 for (int i = 0; i < zoekconfiguraties.size(); i++) {
                     ZoekConfiguratie zc = (ZoekConfiguratie) zoekconfiguraties.get(i);
                     results = zoekMetConfiguratie(zc, cleanStringArray(searchStrings), maxResults, results);
+
+                    /* XY zoekresultaat toevoegen indien niet null */
+                    ZoekResultaat zr = getXYZoekResultaat(zc, searchStrings); 
+                    if (zr != null) {
+                        if (results == null) {
+                            results = new ArrayList();
+                        }
+
+                        results.add(zr);
+                    }
+
                 }
                 tx.commit();
             } catch (Exception ex) {
@@ -226,6 +239,7 @@ public class Zoeker {
                         if (filter != null) {
                             filters.add(filter);
                         }
+
                     }
                     //maak een and filter of een single filter aan de hand van het aantal filters
                     Filter filter = null;
@@ -236,7 +250,7 @@ public class Zoeker {
                     }
                     //maak de query met de maxResults
                     DefaultQuery query;
-                    if (filters.size() == 0) {
+                    if (filters.isEmpty()) {
                         query = new DefaultQuery(zc.getFeatureType());
                     } else {
                         query = new DefaultQuery(zc.getFeatureType(), filter);
@@ -303,7 +317,7 @@ public class Zoeker {
                     }
                     log.error("Feature " + zc.getFeatureType() + " niet bekend bij bron, mogelijke features: " + typenames, snfe);
                 } catch (Exception e) {
-                    log.error("Fout bij laden plannen: ", e);
+                    log.error("Fout tijdens het zoeken met een configuratie: ", e);
                 } finally {
                     if (fc != null && fi != null) {
                         fc.close(fi);
@@ -430,6 +444,7 @@ public class Zoeker {
                 }
             }
         }
+
         return filter;
     }
 
@@ -441,5 +456,50 @@ public class Zoeker {
             return true;
         }
         return false;
+    }
+
+    private ZoekResultaat getXYZoekResultaat(ZoekConfiguratie zc, String[] searchStrings) {
+        /* Als er XY coordinaten als zoekstring zijn ingevuld deze als
+         * POINT geom toevoegen aan zoek resultaten */
+        try {
+            WKTReader wktreader = new WKTReader(new GeometryFactory(new PrecisionModel(), 28992));
+
+            if (searchStrings != null && searchStrings.length > 0) {
+                String[] coords = searchStrings[searchStrings.length-1].split(",");
+
+                if (coords != null && coords.length == 2) {
+                    String wkt = "POINT(" + coords[0] + " " + coords[1] + ")";
+                    Geometry geom = wktreader.read(wkt);
+
+                    if (geom != null) {
+                        ResultaatAttribuut raToon = new ResultaatAttribuut();
+
+                        ZoekResultaatAttribuut zra = new ZoekResultaatAttribuut(raToon);
+                        zra.setType(Attribuut.ALLEEN_TOON_TYPE);
+                        String waarde = "Zoom naar (" + coords[0] + " " + coords[1] + ")";
+                        zra.setWaarde(waarde);
+
+                        ZoekResultaat zrGeom = new ZoekResultaat();
+                        zrGeom.addAttribuut(zra);
+                        zrGeom.setZoekConfiguratie(zc);
+
+                        int bufferSize = 50;
+
+                        Envelope env = geom.getEnvelopeInternal();
+                        zrGeom.setMinx(env.getMinX() - bufferSize);
+                        zrGeom.setMiny(env.getMinY() + bufferSize);
+                        zrGeom.setMaxx(env.getMaxX() + bufferSize);
+                        zrGeom.setMaxy(env.getMaxY() - bufferSize);
+
+                        return zrGeom;
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            log.error("Fout tijdens omzetten XY zoekopdracht naar een zoekresultaat: ", e);
+        }
+
+        return null;
     }
 }
