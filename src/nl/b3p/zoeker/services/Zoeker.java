@@ -225,14 +225,14 @@ public class Zoeker {
                     Iterator it = zc.getZoekVelden().iterator();
                     List filters = new ArrayList();
 
-                    //maak de filters
+                    //maak de filters                    
                     try {
                         fs.getSchema();
                     } catch (NullPointerException npe) {
                         log.error("Kan het schema voor de zoekconfiguratie niet ophalen", npe);
                         throw npe;
                     }
-                    ArrayList properties = new ArrayList();
+                    ArrayList<String> properties = new ArrayList<String>();
                     for (int i = 0; it.hasNext(); i++) {
                         ZoekAttribuut zoekVeld = (ZoekAttribuut) it.next();
                         Filter filter = createFilter(ZoekAttribuut.setToZoekVeldenArray(zc.getZoekVelden()), searchStrings, i, ds, ff, fs.getSchema());
@@ -266,6 +266,17 @@ public class Zoeker {
                         ResultaatAttribuut pa = (ResultaatAttribuut) pit.next();
                         if (!properties.contains(pa.getAttribuutLocalnaam())) {
                             properties.add(pa.getAttribuutLocalnaam());
+                        }
+                    }
+                    //if log is in debug then check if all properties exists
+                    if(log.isDebugEnabled()){
+                        FeatureType schema = fs.getSchema();
+                        for(String prop : properties){
+                            PropertyDescriptor pd=schema.getDescriptor(prop);
+                            if(pd==null){
+                                log.debug("The property: '"+prop+"' that is configured "
+                                        + "in the 'zoeker' is not available in the feature: "+zc.getFeatureType());
+                            }
                         }
                     }
                     query.setPropertyNames(properties);
