@@ -280,10 +280,8 @@ public class Bron {
                 }
             }
             params.put(WFSDataStoreFactory.URL.key, url);
-            if (this.getGebruikersnaam() != null) {
+            if (this.getGebruikersnaam() != null && this.getWachtwoord() != null) {
                 params.put(WFSDataStoreFactory.USERNAME.key, this.getGebruikersnaam());
-            }
-            if (this.getWachtwoord() != null) {
                 params.put(WFSDataStoreFactory.PASSWORD.key, this.getWachtwoord());
             }
             params.put(WFSDataStoreFactory.TIMEOUT.key, TIMEOUT);
