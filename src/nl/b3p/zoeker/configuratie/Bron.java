@@ -311,18 +311,34 @@ public class Bron {
         perParameterSetDataStoreCache.put(p, ds);
     }
     public static synchronized WFSDataStore getWfsCache(HashMap p) {
-        long nowTimestamp = (new Date()).getTime();
-        if (getDataStoreLifecycle() > 0 && (nowTimestamp - dataStoreTimestamp) > getDataStoreLifecycle()) {
+        if (isCacheExpired()) {
             flushWfsCache();
-            dataStoreTimestamp = nowTimestamp;
+
+            long nowTimestamp = (new Date()).getTime();
+
             log.info("WFS cache flushed at: " + nowTimestamp + " ms, lifecycle: "
                     + getDataStoreLifecycle() + " ms (0 is no automatic cache flush).");
+
             return null;
         }
+
         if (perParameterSetDataStoreCache.containsKey(p)) {
             return perParameterSetDataStoreCache.get(p);
         }
+
         return null;
+    }
+
+    public static boolean isCacheExpired() {
+        long nowTimestamp = (new Date()).getTime();
+        
+        if (getDataStoreLifecycle() > 0 && (nowTimestamp - dataStoreTimestamp) > getDataStoreLifecycle()) {
+            dataStoreTimestamp = nowTimestamp;
+
+            return true;
+        }
+
+        return false;
     }
     
     /**
