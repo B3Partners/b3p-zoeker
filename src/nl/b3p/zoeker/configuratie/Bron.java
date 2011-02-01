@@ -288,10 +288,14 @@ public class Bron {
             params.put(WFSDataStoreFactory.PROTOCOL.key, Boolean.TRUE);
 
             DataStore ds = getWfsCache(params);
+
             if (ds == null) {
-                ds = (new WFSDataStoreFactory()).createDataStore(params);
-                putWfsCache(params, (WFSDataStore) repairDataStore(ds));
+                if (!perParameterSetDataStoreCache.containsKey(params)) {
+                    ds = (new WFSDataStoreFactory()).createDataStore(params);
+                    putWfsCache(params, (WFSDataStore) repairDataStore(ds));
+                }
             }
+
             return ds;
  
         }
@@ -300,6 +304,8 @@ public class Bron {
 
     public static synchronized void flushWfsCache() {
         perParameterSetDataStoreCache = new HashMap();
+
+        log.info("Cache WFS leeggemaakt");
     }
     public static synchronized void putWfsCache(HashMap p, WFSDataStore ds) {
         perParameterSetDataStoreCache.put(p, ds);
@@ -394,6 +400,7 @@ public class Bron {
         return ds;
     }
 
+    @Override
     public String toString() {
         String returnValue = "";
         if (getNaam() != null) {

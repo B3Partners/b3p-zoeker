@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import nl.b3p.zoeker.services.ZoekResultaat;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -54,6 +56,8 @@ public class ZoekConfiguratie {
      * wordt gehandeld alsof er geen lijst is.
      */
     private boolean resultListDynamic = true;
+
+    private static final Log log = LogFactory.getLog(ZoekConfiguratie.class);
 
     public ZoekConfiguratie() {
     }
@@ -238,6 +242,7 @@ public class ZoekConfiguratie {
 
     }
 
+    @Override
     public String toString() {
         String returnValue = "";
         if (getNaam() != null) {
@@ -268,6 +273,8 @@ public class ZoekConfiguratie {
 
     public static synchronized void flushCachedResultListCache() {
         cachedResultMap = new HashMap();
+
+        log.info("Cache opzoeklijsten leeggemaakt");
     }
 
     public static synchronized void setCachedResultList(ZoekConfiguratie zc,
