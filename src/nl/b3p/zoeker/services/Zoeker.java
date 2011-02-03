@@ -312,7 +312,19 @@ public class Zoeker {
                         } else {
                             log.debug("Can't set Bbox for result. No bounds set for feature by the server. And no Geometry given or configured as result in the search configuration");
                         }
-                        if (!zoekResultaten.contains(p)) {
+                        /* Niet ArrayList.contains() gebruiken omdat daar alle attributen worden gecontrolleerd.
+                         * we willen alleen de id's controleren.
+                         */
+                        boolean contains=false;
+                        for(ZoekResultaat zoekresultaat :zoekResultaten){
+                            if (zoekresultaat.getId()!=null && p.getId()!=null){
+                                if (zoekresultaat.getId().equals(p.getId())){
+                                    contains=true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!contains){
                             zoekResultaten.add(p);
                         }
 
