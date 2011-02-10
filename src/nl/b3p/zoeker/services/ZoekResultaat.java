@@ -274,7 +274,7 @@ public class ZoekResultaat implements Comparable {
             return -1;
         } else if (zra.getWaarde() == null) {
             return 1;
-        } else if (thisZra.getWaarde() instanceof Comparable) {
+        } else if (thisZra.getWaarde() instanceof Comparable && zra.getWaarde() instanceof Comparable) {
             //most services give the numbers in string format. Try to numberFormat the strings and then compare
             boolean NaN = false;
             if (thisZra.getWaarde() instanceof String && zra.getWaarde() instanceof String) {
@@ -288,8 +288,8 @@ public class ZoekResultaat implements Comparable {
             }
             if (NaN) {
                 return ((Comparable) thisZra.getWaarde()).compareTo(zra.getWaarde());
-            } else {
-                return thisZra.getWaarde().toString().compareToIgnoreCase(zra.getWaarde().toString());
+            }else {
+                return ((Comparable)thisZra.getWaarde()).compareTo((Comparable)zra.getWaarde());
             }
         }
         return thisZra.getWaarde().toString().compareToIgnoreCase(zra.getWaarde().toString());
