@@ -274,7 +274,7 @@ public class ZoekConfiguratie {
     public static synchronized void flushCachedResultListCache() {
         cachedResultMap = new HashMap();
 
-        log.info("Cache opzoeklijsten leeggemaakt");
+        log.info("Cache opzoeklijsten leeggemaakt.");
     }
 
     public static synchronized void setCachedResultList(ZoekConfiguratie zc,

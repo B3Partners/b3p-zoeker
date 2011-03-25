@@ -305,7 +305,7 @@ public class Bron {
     public static synchronized void flushWfsCache() {
         perParameterSetDataStoreCache = new HashMap();
 
-        log.info("Cache WFS leeggemaakt");
+        log.info("Cache WFS leeggemaakt.");
     }
     public static synchronized void putWfsCache(HashMap p, WFSDataStore ds) {
         perParameterSetDataStoreCache.put(p, ds);
@@ -313,11 +313,6 @@ public class Bron {
     public static synchronized WFSDataStore getWfsCache(HashMap p) {
         if (isCacheExpired()) {
             flushWfsCache();
-
-            long nowTimestamp = (new Date()).getTime();
-
-            log.info("WFS cache flushed at: " + nowTimestamp + " ms, lifecycle: "
-                    + getDataStoreLifecycle() + " ms (0 is no automatic cache flush).");
 
             return null;
         }
@@ -352,8 +347,6 @@ public class Bron {
      * @param aDataStoreLifecycle the dataStoreLifecycle to set
      */
     public static void setDataStoreLifecycle(long aDataStoreLifecycle) {
-        log.info("WFS cache lifecycle: "
-                + getDataStoreLifecycle() + " ms (0 is no automatic cache flush).");
         dataStoreLifecycle = aDataStoreLifecycle;
     }
 
