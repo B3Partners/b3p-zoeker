@@ -2,7 +2,7 @@
 <!-- $Id: hibernate.cfg.xml 2782 2006-03-01 15:56:39Z Matthijs $ -->
 <!DOCTYPE hibernate-configuration PUBLIC
 	"-//Hibernate/Hibernate Configuration DTD//EN"
-	"http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+	"http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
 <hibernate-configuration>
     <session-factory>
 	
