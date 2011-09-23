@@ -193,13 +193,12 @@ public class Bron {
     }
 
     public DataStore toDatastore() throws IOException, Exception {
-
         if (this.getUrl() == null) {
             return null;
         }
+
         HashMap params = new HashMap();
         if (checkType(TYPE_ORACLE)) {
-            //jdbc:oracle:thin:@b3p-demoserver:1521:ORCL
             int firstIndex;
             int lastIndex;
             firstIndex = this.getUrl().indexOf("@") + 1;
@@ -229,8 +228,8 @@ public class Bron {
             params.put(OracleNGDataStoreFactory.EXPOSE_PK.key, Boolean.TRUE);
             return (new OracleNGDataStoreFactory()).createDataStore(params);
         }
+
         if (checkType(TYPE_JDBC)) {
-            //jdbc:postgresql://localhost:5432/edamvolendam_gis
             int firstIndex;
             int lastIndex;
             firstIndex = this.getUrl().indexOf("//") + 2;
@@ -262,6 +261,7 @@ public class Bron {
             }
             params.put(PostgisNGDataStoreFactory.EXPOSE_PK.key, Boolean.TRUE);
         }
+
         if (checkType(TYPE_WFS)) {
             String url = this.getUrl();
             if (this.getUrl().toLowerCase().indexOf("request=") == -1) {
