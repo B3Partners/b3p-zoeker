@@ -128,16 +128,16 @@ public class ZoekResultaat implements Comparable {
      */
     public String getId() {
         ArrayList waarden = getWaarden(Attribuut.ID_TYPE);
-        if (waarden.size() == 0) {
+        if (waarden.isEmpty()) {
             ArrayList twaarden = getWaarden(Attribuut.TOON_TYPE);
-            if (twaarden.size() == 0) {
+            if (twaarden.isEmpty()) {
                 return null;
             } else if (twaarden.size() > 1) {
-                log.error("Meerdere resultaat attributen geconfigureerd met type toon, dit mag er maar 1 zijn als er geen ID veld is. De eerste wordt gebruikt");
+                log.debug("Meerdere resultaat attributen geconfigureerd met type toon, dit mag er maar 1 zijn als er geen ID veld is. De eerste wordt gebruikt");
             }
             return twaarden.get(0).toString();
         } else if (waarden.size() > 1) {
-            log.error("Meerdere resultaat attributen geconfigureerd met type ID, dit mag er maar 1 zijn. De eerste wordt gebruikt");
+            log.debug("Meerdere resultaat attributen geconfigureerd met type ID, dit mag er maar 1 zijn. De eerste wordt gebruikt");
         }
         return waarden.get(0).toString();
 
