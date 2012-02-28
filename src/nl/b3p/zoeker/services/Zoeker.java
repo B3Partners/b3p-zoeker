@@ -279,6 +279,16 @@ public class Zoeker {
                             }
                         }
                     }
+                    
+                    /* TODO: Nagaan waarom %raad% hier minder resultaten geeft dan
+                     * hetzelfde verzoek via pgAdmin
+                    ArrayList<String> newProperties = new ArrayList<String>();
+                    for (int i=0; i< searchStrings.length-1; i++) {
+                        if (!searchStrings[i].equals("")) {
+                            newProperties.add(properties.get(i));
+                        }
+                    } */                   
+                    
                     query.setPropertyNames(properties);
                     //Haal de featureCollection met de query op.
                     fc = fs.getFeatures(query);
@@ -345,7 +355,10 @@ public class Zoeker {
                     if (fc != null && fi != null) {
                         fc.close(fi);
                     }
-
+                    
+                    if (ds != null) {
+                        ds.dispose();
+                    }
                 }
             } else {
                 log.error("Kan geen datastore maken van bron");
