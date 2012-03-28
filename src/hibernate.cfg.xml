@@ -5,13 +5,13 @@
         
 <hibernate-configuration>
     <session-factory>
-        <!-- Mapping files pg-->
+        <!-- Mapping files pg -->
         <property name="dialect">org.hibernate.dialect.PostgreSQLDialect</property>
         <mapping resource="zoeker.hbm.pg.xml"/>
 		
-        <!-- Mapping files oracle 
+        <!-- Mapping files oracle
         <property name="dialect">org.hibernate.dialect.Oracle10gDialect</property>
-        <mapping resource="zoeker.hbm.oracle.xml"/>-->		
+        <mapping resource="zoeker.hbm.oracle.xml"/> -->
     </session-factory>
 </hibernate-configuration>
 
