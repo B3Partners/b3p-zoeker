@@ -5,6 +5,7 @@
 package nl.b3p.zoeker.services;
 
 import java.util.ArrayList;
+import java.util.List;
 import nl.b3p.zoeker.configuratie.Attribuut;
 import nl.b3p.zoeker.configuratie.ZoekConfiguratie;
 import org.apache.commons.logging.Log;
@@ -17,7 +18,7 @@ import org.opengis.geometry.BoundingBox;
 public class ZoekResultaat implements Comparable {
 
     private static final Log log = LogFactory.getLog(ZoekResultaat.class);
-    private ArrayList<ZoekResultaatAttribuut> attributen = null;
+    private List<ZoekResultaatAttribuut> attributen = null;
     private ZoekConfiguratie zoekConfiguratie = null;
     private double maxx;
     private double maxy;
@@ -93,14 +94,14 @@ public class ZoekResultaat implements Comparable {
     /**
      * @return the attributen
      */
-    public ArrayList<ZoekResultaatAttribuut> getAttributen() {
+    public List<ZoekResultaatAttribuut> getAttributen() {
         return attributen;
     }
 
     /**
      * @param attributen the attributen to set
      */
-    public void setAttributen(ArrayList attributen) {
+    public void setAttributen(List attributen) {
         this.attributen = attributen;
     }
 
@@ -207,7 +208,7 @@ public class ZoekResultaat implements Comparable {
             return 1;
         }
         ZoekResultaat zoekResultaat = (ZoekResultaat) o;
-        ArrayList<ZoekResultaatAttribuut> zAttributen = zoekResultaat.getAttributen();
+        ArrayList<ZoekResultaatAttribuut> zAttributen = (ArrayList<ZoekResultaatAttribuut>) zoekResultaat.getAttributen();
         if (zAttributen == null) {
             return 1;
         }

@@ -16,6 +16,16 @@ import nl.b3p.zoeker.configuratie.ResultaatAttribuut;
 public class ZoekResultaatAttribuut extends Attribuut{
     private Object waarde=null;
 
+    public ZoekResultaatAttribuut(String naam,String label,Integer type,String waarde){
+        setNaam(naam);
+        setType(type);
+        setLabel(label);
+        setWaarde(waarde);
+    }
+    public ZoekResultaatAttribuut(){
+        super();
+    }
+    
     public ZoekResultaatAttribuut(ResultaatAttribuut ra) {
         super(ra);
     }

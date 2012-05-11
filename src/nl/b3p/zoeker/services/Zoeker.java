@@ -52,11 +52,11 @@ import org.opengis.filter.FilterFactory2;
  */
 public class Zoeker {
 
-    private static final int topMaxResults = 100;
+    private static final int defaultMaxResults = 1000;
     private static final Log log = LogFactory.getLog(Zoeker.class);
     private static final SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", new Locale("NL"));
 
-    public List zoek(Integer[] zoekConfiguratieIds, String searchStrings[], Integer maxResults) {
+    public List<ZoekResultaat> zoek(Integer[] zoekConfiguratieIds, String searchStrings[], Integer maxResults) {
         List<ZoekResultaat> results = new ArrayList();
 
         Object identity = null;
@@ -169,7 +169,7 @@ public class Zoeker {
      */
     public List<ZoekResultaat> zoekMetConfiguratie(ZoekConfiguratie zc, String[] searchStrings, Integer maxResults, List<ZoekResultaat> results) {
         if (maxResults == null || maxResults.intValue() == 0) {
-            maxResults = topMaxResults;
+            maxResults = defaultMaxResults;
         }
         if (zc == null || searchStrings == null) {
             return results;
@@ -537,5 +537,30 @@ public class Zoeker {
         }
 
         return null;
+    }
+    public ZoekConfiguratie getZoekConfiguratie(Integer id){
+        Object identity = null;
+        ZoekConfiguratie zc=null;
+        try {
+            identity = MyEMFDatabase.createEntityManager(MyEMFDatabase.MAIN_EM);
+            EntityManager em = MyEMFDatabase.getEntityManager(MyEMFDatabase.MAIN_EM);
+            EntityTransaction tx = em.getTransaction();
+            tx.begin();
+            try {
+                zc=em.find(ZoekConfiguratie.class, id);                
+                tx.commit();
+            } catch (Exception ex) {
+                log.error("Exception occured" + (tx.isActive() ? ", rollback" : "tx not active"), ex);
+                if (tx.isActive()) {
+                    tx.rollback();
+                }
+            }
+        } catch (Throwable e) {
+            log.error("Exception occured in search: ", e);
+        } finally {
+            log.debug("Closing entity manager .....");
+            MyEMFDatabase.closeEntityManager(identity, MyEMFDatabase.MAIN_EM);
+        }
+        return zc;
     }
 }
