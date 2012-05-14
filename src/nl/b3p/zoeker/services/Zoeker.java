@@ -325,15 +325,8 @@ public class Zoeker {
                         /* Niet ArrayList.contains() gebruiken omdat daar alle attributen worden gecontrolleerd.
                          * we willen alleen de id's controleren.
                          */
-                        boolean contains=false;
-                        for(ZoekResultaat zoekresultaat :zoekResultaten){
-                            if (zoekresultaat.getId()!=null && p.getId()!=null){
-                                if (zoekresultaat.getId().equals(p.getId())){
-                                    contains=true;
-                                    break;
-                                }
-                            }
-                        }
+                        boolean contains=containsResult(zoekResultaten,p);
+                        
                         if (!contains){
                             zoekResultaten.add(p);
                         }
@@ -405,6 +398,17 @@ public class Zoeker {
             MyEMFDatabase.closeEntityManager(identity, MyEMFDatabase.MAIN_EM);
         }
         return returnList;
+    }
+    
+    protected boolean containsResult(List<ZoekResultaat> zoekResultaten, ZoekResultaat p){
+        for(ZoekResultaat zoekresultaat :zoekResultaten){
+            if (zoekresultaat.getId()!=null && p.getId()!=null){
+                if (zoekresultaat.getId().equals(p.getId())){
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
