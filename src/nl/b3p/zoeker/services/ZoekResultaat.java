@@ -303,4 +303,15 @@ public class ZoekResultaat implements Comparable {
     public void setZoekConfiguratie(ZoekConfiguratie zoekConfiguratie) {
         this.zoekConfiguratie = zoekConfiguratie;
     }
+
+    public ZoekResultaatAttribuut getAttribuutByName(String name) {
+        if (this.attributen!=null){           
+            for (ZoekResultaatAttribuut at : this.attributen){
+                if (at.getNaam().equals(name)){
+                    return at;
+                }
+            }
+        }
+        return null;
+    }
 }
