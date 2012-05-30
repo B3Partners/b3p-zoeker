@@ -20,64 +20,64 @@ public class ZoekResultaat implements Comparable {
     private static final Log log = LogFactory.getLog(ZoekResultaat.class);
     private List<ZoekResultaatAttribuut> attributen = null;
     private ZoekConfiguratie zoekConfiguratie = null;
-    private double maxx;
-    private double maxy;
-    private double minx;
-    private double miny;
+    private Double maxx;
+    private Double maxy;
+    private Double minx;
+    private Double miny;
 
     /**
      * @return the maxX
      */
-    public double getMaxx() {
+    public Double getMaxx() {
         return maxx;
     }
 
     /**
      * @param maxX the maxX to set
      */
-    public void setMaxx(double maxx) {
+    public void setMaxx(Double maxx) {
         this.maxx = maxx;
     }
 
     /**
      * @return the maxY
      */
-    public double getMaxy() {
+    public Double getMaxy() {
         return maxy;
     }
 
     /**
      * @param maxY the maxY to set
      */
-    public void setMaxy(double maxy) {
+    public void setMaxy(Double maxy) {
         this.maxy = maxy;
     }
 
     /**
      * @return the minX
      */
-    public double getMinx() {
+    public Double getMinx() {
         return minx;
     }
 
     /**
      * @param minX the minX to set
      */
-    public void setMinx(double minx) {
+    public void setMinx(Double minx) {
         this.minx = minx;
     }
 
     /**
      * @return the minY
      */
-    public double getMiny() {
+    public Double getMiny() {
         return miny;
     }
 
     /**
      * @param minY the minY to set
      */
-    public void setMiny(double miny) {
+    public void setMiny(Double miny) {
         this.miny = miny;
     }
 
