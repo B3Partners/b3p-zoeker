@@ -316,13 +316,16 @@ public class Zoeker {
                         /* Niet ArrayList.contains() gebruiken omdat daar alle attributen worden gecontrolleerd.
                          * we willen alleen de id's controleren.
                          */
-                        boolean contains=containsResult(zoekResultaten,p);
-                        
-                        if (!contains){
+                        if (zc.isResultListDynamic()) {
                             zoekResultaten.add(p);
+                        } else { // cache bekijken
+                            boolean contains = containsResult(zoekResultaten,p);
+                            
+                            if (!contains) {
+                                zoekResultaten.add(p);
+                            }
                         }
-
-                    }
+                    }                    
                 } catch (SchemaNotFoundException snfe) {
                     String typenames = "";
                     String[] tn = ds.getTypeNames();
