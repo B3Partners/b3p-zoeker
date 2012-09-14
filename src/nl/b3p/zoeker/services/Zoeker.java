@@ -462,20 +462,32 @@ public class Zoeker {
         } else if (zoekVeld.getType().intValue() == Attribuut.GELIJK_AAN_TYPE) {
             filter = ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString));
         } else if (zoekVeld.isFilterMogelijk()) {
-            if (ds instanceof WFS_1_0_0_DataStore) {
-                if (propertyIsNumber(ft.getDescriptor(zoekVeld.getAttribuutnaam()))) {
-                    filter = ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString));
-                } else {
-                    filter = ff.like(ff.property(zoekVeld.getAttribuutnaam()), searchString);
-                }
-            } else {
-                if (searchString.length() > 0) {
+            String[] orStrings = searchString.split("\\|");
+            List<Filter> orFilters= new ArrayList<Filter>();
+            for (int i=0; i < orStrings.length; i++){
+                Filter f=null;
+                String sString=orStrings[i];
+                if (ds instanceof WFS_1_0_0_DataStore) {
                     if (propertyIsNumber(ft.getDescriptor(zoekVeld.getAttribuutnaam()))) {
-                        filter = ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString));
+                        f = ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(sString));
                     } else {
-                        filter = ff.like(ff.property(zoekVeld.getAttribuutnaam()), searchString, "*", "?", "\\", false);
+                        f = ff.like(ff.property(zoekVeld.getAttribuutnaam()), sString);
+                    }
+                } else {
+                    if (sString.length() > 0) {
+                        if (propertyIsNumber(ft.getDescriptor(zoekVeld.getAttribuutnaam()))) {
+                            f = ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(sString));
+                        } else {
+                            f = ff.like(ff.property(zoekVeld.getAttribuutnaam()), sString, "*", "?", "\\", false);
+                        }
                     }
                 }
+                orFilters.add(f);
+            }
+            if (orFilters.size()==1){
+                filter=orFilters.get(0);
+            }else{
+                filter=ff.or(orFilters);
             }
         }
 
