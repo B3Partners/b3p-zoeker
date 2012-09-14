@@ -271,7 +271,9 @@ public class ZoekResultaat implements Comparable {
     }
 
     private static int compareAttributeValues(ZoekResultaatAttribuut thisZra, ZoekResultaatAttribuut zra) {
-        if (thisZra.getWaarde() == null) {
+        if (thisZra.getWaarde() == null && zra.getWaarde() == null){
+            return 0;
+        }else if (thisZra.getWaarde() == null) {
             return -1;
         } else if (zra.getWaarde() == null) {
             return 1;
