@@ -31,6 +31,8 @@ public class Attribuut {
     public final static int XY_COORD_TYPE=80;
     public final static int STRAAL_TYPE=100;
     
+    public final static int LOCATIE_GEOM__TYPE = 110;
+    
     private Integer id=null;
     private String naam=null;
     private String attribuutnaam=null;

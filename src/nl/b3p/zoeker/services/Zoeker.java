@@ -4,6 +4,7 @@
  */
 package nl.b3p.zoeker.services;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -11,6 +12,7 @@ import com.vividsolutions.jts.geom.PrecisionModel;
 import com.vividsolutions.jts.io.WKTReader;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import javax.persistence.EntityManager;
@@ -30,12 +32,15 @@ import org.geotools.factory.GeoTools;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.filter.FilterCapabilities;
+import org.geotools.geometry.jts.JTS;
+import org.geotools.referencing.CRS;
 import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  *
@@ -71,7 +76,7 @@ public class Zoeker {
                     results = zoekMetConfiguratie(zc, cleanStringArray(searchStrings), maxResults, results);
 
                     /* XY zoekresultaat toevoegen indien niet null */
-                    ZoekResultaat zr = getXYZoekResultaat(zc, searchStrings); 
+                    ZoekResultaat zr = getXYZoekResultaat(zc, searchStrings);
                     if (zr != null) {
                         if (results == null) {
                             results = new ArrayList();
@@ -114,8 +119,8 @@ public class Zoeker {
     // staan alle resultaatvelden in de zoekvelden?
     // zijn alle zoekvelden gelijk-aan-velden?
     // ja en ja dan direct ZoekResultaat terugsturen.
-     protected ZoekResultaat resultaatInVraag(ZoekConfiguratie zc, String[] searchStrings) {
-       Set<ResultaatAttribuut> rvs = zc.getResultaatVelden();
+    protected ZoekResultaat resultaatInVraag(ZoekConfiguratie zc, String[] searchStrings) {
+        Set<ResultaatAttribuut> rvs = zc.getResultaatVelden();
         Set<ZoekAttribuut> zvs = zc.getZoekVelden();
         Integer gelijkAanType = new Integer(Attribuut.GELIJK_AAN_TYPE);
         if (rvs != null && !rvs.isEmpty() && zvs != null && !zvs.isEmpty()
@@ -152,11 +157,16 @@ public class Zoeker {
     }
 
     /**
-     * Zoek moet configuratie (search Strings moet gelijk zijn aan aantal zoekvelden in de ZoekConfiguratie:
+     * Zoek moet configuratie (search Strings moet gelijk zijn aan aantal
+     * zoekvelden in de ZoekConfiguratie:
+     *
      * @param zc: ZoekConfiguratie waarmee gezocht moet worden
-     * @param searchStrings Een array van gezochte waarden. (moet gelijk zijn aan het aantal geconfigureerde zoekvelden en ook in die volgorde staan)
-     * @param maxResults: Het maximaal aantal resultaten dat getoond moeten worden.
-     * @param results: De al gevonden resultaten (de nieuwe resultaten worden hier aan toegevoegd.
+     * @param searchStrings Een array van gezochte waarden. (moet gelijk zijn
+     * aan het aantal geconfigureerde zoekvelden en ook in die volgorde staan)
+     * @param maxResults: Het maximaal aantal resultaten dat getoond moeten
+     * worden.
+     * @param results: De al gevonden resultaten (de nieuwe resultaten worden
+     * hier aan toegevoegd.
      */
     public List<ZoekResultaat> zoekMetConfiguratie(ZoekConfiguratie zc, String[] searchStrings, Integer maxResults, List<ZoekResultaat> results) {
         if (maxResults == null || maxResults.intValue() == 0) {
@@ -166,11 +176,14 @@ public class Zoeker {
             return results;
         }
 
+        boolean calculateDistance = false;
+        String locationWkt = null;
+
         List<ZoekResultaat> zoekResultaten = new ArrayList(results);
         // Controleer of de zoekvelden al voldoende info bevatten om zonder
         // nieuwe zoekactie de resultaatvelden te vullen
         ZoekResultaat zr = resultaatInVraag(zc, searchStrings);
-        if (zr!=null) {
+        if (zr != null) {
             zoekResultaten.add(zr);
             log.debug("Result found in request, no new search action!");
             return zoekResultaten;
@@ -231,6 +244,10 @@ public class Zoeker {
                             filters.add(filter);
                         }
 
+                        if (zoekVeld.getType() == Attribuut.LOCATIE_GEOM__TYPE) {
+                            calculateDistance = true;
+                            locationWkt = searchStrings[i];
+                        }
                     }
                     //maak een and filter of een single filter aan de hand van het aantal filters
                     Filter filter = null;
@@ -260,26 +277,17 @@ public class Zoeker {
                         }
                     }
                     //if log is in debug then check if all properties exists
-                    if(log.isDebugEnabled()){
+                    if (log.isDebugEnabled()) {
                         FeatureType schema = fs.getSchema();
-                        for(String prop : properties){
-                            PropertyDescriptor pd=schema.getDescriptor(prop);
-                            if(pd==null){
-                                log.debug("The property: '"+prop+"' that is configured "
-                                        + "in the 'zoeker' is not available in the feature: "+zc.getFeatureType());
+                        for (String prop : properties) {
+                            PropertyDescriptor pd = schema.getDescriptor(prop);
+                            if (pd == null) {
+                                log.debug("The property: '" + prop + "' that is configured "
+                                        + "in the 'zoeker' is not available in the feature: " + zc.getFeatureType());
                             }
                         }
                     }
-                    
-                    /* TODO: Nagaan waarom %raad% hier minder resultaten geeft dan
-                     * hetzelfde verzoek via pgAdmin
-                    ArrayList<String> newProperties = new ArrayList<String>();
-                    for (int i=0; i< searchStrings.length-1; i++) {
-                        if (!searchStrings[i].equals("")) {
-                            newProperties.add(properties.get(i));
-                        }
-                    } */                   
-                    
+
                     query.setPropertyNames(properties);
                     //Haal de featureCollection met de query op.
                     fc = fs.getFeatures(query);
@@ -313,19 +321,34 @@ public class Zoeker {
                         } else {
                             log.debug("Can't set Bbox for result. No bounds set for feature by the server. And no Geometry given or configured as result in the search configuration");
                         }
+
+                        /* Indien zoekveld type 110. Afstand berekenen en toevoegen */
+                        if (calculateDistance && locationWkt != null) {
+                            Geometry locationGeom = createGeomFromWkt(locationWkt);
+
+                            if (f.getType().getGeometryDescriptor() != null) {
+                                Geometry resultGeom = (Geometry) f.getDefaultGeometryProperty().getValue();
+                                
+                                double distance = calcDistance(locationGeom, resultGeom);
+
+                                p.addAttribuut(createAfstandResultaatAttribuut(distance));
+                                p.setZoekConfiguratie(zc);
+                            }
+                        }
+
                         /* Niet ArrayList.contains() gebruiken omdat daar alle attributen worden gecontrolleerd.
                          * we willen alleen de id's controleren.
                          */
                         if (zc.isResultListDynamic()) {
                             zoekResultaten.add(p);
                         } else { // cache bekijken
-                            boolean contains = containsResult(zoekResultaten,p);
-                            
+                            boolean contains = containsResult(zoekResultaten, p);
+
                             if (!contains) {
                                 zoekResultaten.add(p);
                             }
                         }
-                    }                    
+                    }
                 } catch (SchemaNotFoundException snfe) {
                     String typenames = "";
                     String[] tn = ds.getTypeNames();
@@ -342,7 +365,7 @@ public class Zoeker {
                     if (fc != null && fi != null) {
                         fc.close(fi);
                     }
-                    
+
                     if (ds != null) {
                         ds.dispose();
                     }
@@ -365,6 +388,52 @@ public class Zoeker {
         }
 
         return zoekResultaten;
+    }
+
+    private Geometry createGeomFromWkt(String wkt) {
+        WKTReader wktreader = new WKTReader(new GeometryFactory(new PrecisionModel(), 28992));
+        Geometry geom = null;
+        try {
+            geom = wktreader.read(wkt);
+        } catch (Exception e) {
+            log.error("Fout bij parsen wkt geometry", e);
+        }
+
+        return geom;
+    }
+
+    private ZoekResultaatAttribuut createAfstandResultaatAttribuut(double distance) {
+        ResultaatAttribuut afstandAttr = new ResultaatAttribuut();
+        afstandAttr.setLabel("Afstand");
+        afstandAttr.setAttribuutnaam("Afstand");
+        afstandAttr.setType(Attribuut.TOON_TYPE);
+        afstandAttr.setVolgorde(9999);
+
+        DecimalFormat twoDForm = new DecimalFormat("#.##");
+		String waarde = twoDForm.format(distance);
+        
+        ZoekResultaatAttribuut zra = new ZoekResultaatAttribuut(afstandAttr);
+        zra.setWaarde(waarde);
+
+        return zra;
+    }
+
+    private double calcDistance(Geometry geom1, Geometry geoemtry2) {
+        double distance = -1;
+        
+        try {
+            CoordinateReferenceSystem crs = CRS.decode("EPSG:28992");
+            Coordinate start = new Coordinate(geom1.getCentroid().getX(), geom1.getCentroid().getY());
+            Coordinate end = new Coordinate(geoemtry2.getCentroid().getX(), geoemtry2.getCentroid().getY());
+
+            if (start != null && end != null) {
+                distance = JTS.orthodromicDistance(start, end, crs);
+            }
+        } catch (Exception ex) {      
+            log.error("Error calculatin distance: ", ex);
+        }
+        
+        return distance;
     }
 
     public static List getZoekConfiguraties() {
@@ -393,11 +462,11 @@ public class Zoeker {
         }
         return returnList;
     }
-    
-    protected boolean containsResult(List<ZoekResultaat> zoekResultaten, ZoekResultaat p){
-        for(ZoekResultaat zoekresultaat :zoekResultaten){
-            if (zoekresultaat.getId()!=null && p.getId()!=null){
-                if (zoekresultaat.getId().equals(p.getId())){
+
+    protected boolean containsResult(List<ZoekResultaat> zoekResultaten, ZoekResultaat p) {
+        for (ZoekResultaat zoekresultaat : zoekResultaten) {
+            if (zoekresultaat.getId() != null && p.getId() != null) {
+                if (zoekresultaat.getId().equals(p.getId())) {
                     return true;
                 }
             }
@@ -407,6 +476,7 @@ public class Zoeker {
 
     /**
      * Maakt een datastore dmv de bron
+     *
      * @param b de Bron
      * @return een Datastore
      * @throws java.io.IOException
@@ -417,8 +487,9 @@ public class Zoeker {
     }
 
     /**
-     * Maakt het filter voor het zoekveld met als value het zoek criterium.
-     * Geef de alle zoekvelden mee en alle ingevulde strings omdat sommige zoekvelden afhankelijk kunnen zijn van elkaar.
+     * Maakt het filter voor het zoekveld met als value het zoek criterium. Geef
+     * de alle zoekvelden mee en alle ingevulde strings omdat sommige zoekvelden
+     * afhankelijk kunnen zijn van elkaar.
      */
     private Filter createFilter(ZoekAttribuut[] zoekVelden, String[] searchStrings, int index, DataStore ds, FilterFactory2 ff, FeatureType ft) throws Exception {
         String searchString = searchStrings[index];
@@ -463,10 +534,10 @@ public class Zoeker {
             filter = ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(searchString));
         } else if (zoekVeld.isFilterMogelijk()) {
             String[] orStrings = searchString.split("\\|");
-            List<Filter> orFilters= new ArrayList<Filter>();
-            for (int i=0; i < orStrings.length; i++){
-                Filter f=null;
-                String sString=orStrings[i];
+            List<Filter> orFilters = new ArrayList<Filter>();
+            for (int i = 0; i < orStrings.length; i++) {
+                Filter f = null;
+                String sString = orStrings[i];
                 if (ds instanceof WFS_1_0_0_DataStore) {
                     if (propertyIsNumber(ft.getDescriptor(zoekVeld.getAttribuutnaam()))) {
                         f = ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(sString));
@@ -484,10 +555,10 @@ public class Zoeker {
                 }
                 orFilters.add(f);
             }
-            if (orFilters.size()==1){
-                filter=orFilters.get(0);
-            }else{
-                filter=ff.or(orFilters);
+            if (orFilters.size() == 1) {
+                filter = orFilters.get(0);
+            } else {
+                filter = ff.or(orFilters);
             }
         }
 
@@ -511,7 +582,7 @@ public class Zoeker {
             WKTReader wktreader = new WKTReader(new GeometryFactory(new PrecisionModel(), 28992));
 
             if (searchStrings != null && searchStrings.length > 0) {
-                String[] coords = searchStrings[searchStrings.length-1].split(",");
+                String[] coords = searchStrings[searchStrings.length - 1].split(",");
 
                 if (coords != null && coords.length == 2) {
                     String wkt = "POINT(" + coords[0] + " " + coords[1] + ")";
@@ -548,16 +619,17 @@ public class Zoeker {
 
         return null;
     }
-    public ZoekConfiguratie getZoekConfiguratie(Integer id){
+
+    public ZoekConfiguratie getZoekConfiguratie(Integer id) {
         Object identity = null;
-        ZoekConfiguratie zc=null;
+        ZoekConfiguratie zc = null;
         try {
             identity = MyEMFDatabase.createEntityManager(MyEMFDatabase.MAIN_EM);
             EntityManager em = MyEMFDatabase.getEntityManager(MyEMFDatabase.MAIN_EM);
             EntityTransaction tx = em.getTransaction();
             tx.begin();
             try {
-                zc=em.find(ZoekConfiguratie.class, id);                
+                zc = em.find(ZoekConfiguratie.class, id);
                 tx.commit();
             } catch (Exception ex) {
                 log.error("Exception occured" + (tx.isActive() ? ", rollback" : "tx not active"), ex);
