@@ -380,7 +380,7 @@ public class Zoeker {
                 ds.dispose();
             }
         }
-
+        
         Collections.sort(zoekResultaten);
         if (!zc.isResultListDynamic()) {
             ZoekConfiguratie.setCachedResultList(zc, zoekResultaten, searchStrings, maxResults);
@@ -404,13 +404,17 @@ public class Zoeker {
 
     private ZoekResultaatAttribuut createAfstandResultaatAttribuut(double distance) {
         ResultaatAttribuut afstandAttr = new ResultaatAttribuut();
-        afstandAttr.setLabel("Afstand");
-        afstandAttr.setAttribuutnaam("Afstand");
-        afstandAttr.setType(Attribuut.TOON_TYPE);
+        afstandAttr.setLabel("afstand");
+        afstandAttr.setAttribuutnaam("afstand");
+        afstandAttr.setType(Attribuut.MEASURE_TYPE);
         afstandAttr.setVolgorde(9999);
 
         DecimalFormat twoDForm = new DecimalFormat("#.##");
 		String waarde = twoDForm.format(distance);
+        
+        if (waarde.contains(",")) {
+            waarde = waarde.replace(",", ".");
+        }
         
         ZoekResultaatAttribuut zra = new ZoekResultaatAttribuut(afstandAttr);
         zra.setWaarde(waarde);
@@ -418,13 +422,17 @@ public class Zoeker {
         return zra;
     }
 
-    private double calcDistance(Geometry geom1, Geometry geoemtry2) {
+    private double calcDistance(Geometry geom1, Geometry geometry2) {
         double distance = -1;
+        
+        if (geom1 == null || geometry2 == null) {
+            return distance;
+        }
         
         try {
             CoordinateReferenceSystem crs = CRS.decode("EPSG:28992");
             Coordinate start = new Coordinate(geom1.getCentroid().getX(), geom1.getCentroid().getY());
-            Coordinate end = new Coordinate(geoemtry2.getCentroid().getX(), geoemtry2.getCentroid().getY());
+            Coordinate end = new Coordinate(geometry2.getCentroid().getX(), geometry2.getCentroid().getY());
 
             if (start != null && end != null) {
                 distance = JTS.orthodromicDistance(start, end, crs);

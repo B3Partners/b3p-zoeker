@@ -165,6 +165,14 @@ public class ZoekResultaat implements Comparable {
         }
         return resultValue;
     }
+    
+    public Double getMeasure() {
+        ArrayList waarden = getWaarden(Attribuut.MEASURE_TYPE);
+        if (waarden.size()>0){
+            return Double.parseDouble(waarden.get(0).toString());
+        }
+        return null;
+    }
 
     /**
      * Geeft een list met waarden(string) terug van alle zoekresultaatattributen met het meegegeven type.
@@ -217,6 +225,12 @@ public class ZoekResultaat implements Comparable {
         }
         if (this.attributen.size() != zAttributen.size()) {
             return 1;
+        }
+        if (this.getMeasure()!=null){
+            int comp = this.getMeasure().compareTo(zoekResultaat.getMeasure());
+            if (comp != 0){
+                return comp;
+            }
         }
 
         //walk over all attributes and compare the attributes
@@ -316,4 +330,6 @@ public class ZoekResultaat implements Comparable {
         }
         return null;
     }
+
+    
 }

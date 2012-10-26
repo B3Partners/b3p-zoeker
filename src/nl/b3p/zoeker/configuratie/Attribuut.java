@@ -33,6 +33,8 @@ public class Attribuut {
     
     public final static int LOCATIE_GEOM__TYPE = 110;
     
+    public final static int MEASURE_TYPE=120;
+    
     private Integer id=null;
     private String naam=null;
     private String attribuutnaam=null;
