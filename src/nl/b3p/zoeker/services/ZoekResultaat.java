@@ -24,6 +24,8 @@ public class ZoekResultaat implements Comparable {
     private Double maxy;
     private Double minx;
     private Double miny;
+    
+    private Integer count;
 
     /**
      * @return the maxX
@@ -331,5 +333,11 @@ public class ZoekResultaat implements Comparable {
         return null;
     }
 
-    
+    public Integer getCount() {
+        return count;
+    }
+
+    public void setCount(Integer count) {
+        this.count = count;
+    }
 }

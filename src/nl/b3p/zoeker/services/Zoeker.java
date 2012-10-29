@@ -155,6 +155,10 @@ public class Zoeker {
         }
         return null;
     }
+    
+    public List<ZoekResultaat> zoekMetConfiguratie(ZoekConfiguratie zc, String[] searchStrings, Integer maxResults, List<ZoekResultaat> results) {
+        return zoekMetConfiguratie(zc, searchStrings, maxResults, results, false, 0, 0);
+    }
 
     /**
      * Zoek moet configuratie (search Strings moet gelijk zijn aan aantal
@@ -168,7 +172,7 @@ public class Zoeker {
      * @param results: De al gevonden resultaten (de nieuwe resultaten worden
      * hier aan toegevoegd.
      */
-    public List<ZoekResultaat> zoekMetConfiguratie(ZoekConfiguratie zc, String[] searchStrings, Integer maxResults, List<ZoekResultaat> results) {
+    public List<ZoekResultaat> zoekMetConfiguratie(ZoekConfiguratie zc, String[] searchStrings, Integer maxResults, List<ZoekResultaat> results, boolean usePagination, int startIndex, int limit) {
         if (maxResults == null || maxResults.intValue() == 0) {
             maxResults = defaultMaxResults;
         }
@@ -289,6 +293,21 @@ public class Zoeker {
                     }
 
                     query.setPropertyNames(properties);
+                    
+                    /* Pagination for FeatureCollection */
+                    final FeatureSource fs2 = fs;
+                    int count = fs2.getCount(query);        
+                    
+                    if (count < limit) {
+                        limit = count;
+                    }
+                    
+                    boolean startIndexSupported = fs.getQueryCapabilities().isOffsetSupported();                    
+                    if (usePagination && startIndexSupported) {
+                        query.setStartIndex(startIndex);
+                        query.setMaxFeatures(Math.min(limit + (startIndexSupported ? 0 : startIndex), maxResults));
+                    }                
+                    
                     //Haal de featureCollection met de query op.
                     fc = fs.getFeatures(query);
                     //Maak de FeatureIterator aan (hier wordt het daad werkelijke verzoek gedaan.
@@ -335,6 +354,8 @@ public class Zoeker {
                                 p.setZoekConfiguratie(zc);
                             }
                         }
+                        
+                        p.setCount(count);
 
                         /* Niet ArrayList.contains() gebruiken omdat daar alle attributen worden gecontrolleerd.
                          * we willen alleen de id's controleren.
