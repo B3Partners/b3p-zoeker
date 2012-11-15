@@ -403,9 +403,7 @@ public class Bron {
             boolean b = filterCap.supports(FilterCapabilities.SIMPLE_COMPARISONS_OPENGIS);
             wfscap.setFilterCapabilities(filterCap);
         }
-        if (ds instanceof WFS_1_1_0_DataStore) {
-            throw new Exception("WFS 1.1.0 datastore kent niet alle geometry elementen, dus nu niet gebruiken");
-        }
+        
         return ds;
     }
 
