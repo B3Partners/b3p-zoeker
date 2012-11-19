@@ -43,6 +43,8 @@ public class Attribuut {
     private Integer volgorde;
     private ZoekConfiguratie zoekConfiguratie;
     
+    private String omschrijving;
+    
     public Attribuut(){}
     public Attribuut(Attribuut a){
         this.id=a.getId();
@@ -52,17 +54,20 @@ public class Attribuut {
         this.type=a.getType();
         this.volgorde=a.getVolgorde();
         this.zoekConfiguratie=a.getZoekConfiguratie();
+        this.omschrijving = a.getOmschrijving();
     }
-    public Attribuut(Integer id, String naam, String attribuutnaam, String label, Integer type, Integer volgorde){
+    public Attribuut(Integer id, String naam, String attribuutnaam, String label,
+            Integer type, Integer volgorde, String omschrijving){
         this.id=id;
         this.naam=naam;
         this.attribuutnaam=attribuutnaam;
         this.label=label;
         this.type=type;
         this.volgorde=volgorde;
+        this.omschrijving=omschrijving;
     }
     public Attribuut(Integer id, String attribuutnaam, String label){
-        this(id,null,attribuutnaam,label,null,null);
+        this(id,null,attribuutnaam,label,null,null,null);
     }
 
     public Integer getId() {
@@ -145,6 +150,14 @@ public class Attribuut {
         this.volgorde = volgorde;
     }
 
+    public String getOmschrijving() {
+        return omschrijving;
+    }
+
+    public void setOmschrijving(String omschrijving) {
+        this.omschrijving = omschrijving;
+    }
+
     public JSONObject toJSON() throws JSONException{
         JSONObject json = new JSONObject();
         json.put("id",getId());
@@ -153,6 +166,7 @@ public class Attribuut {
         json.put("label",getLabel());
         json.put("type",getType());
         json.put("volgorde",getVolgorde());
+        json.put("omschrijving",getOmschrijving());
         return json;
     }
     

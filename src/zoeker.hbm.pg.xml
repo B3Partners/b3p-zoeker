@@ -25,6 +25,7 @@
         <property name="inputtype"/>
         <property name="inputsize"/>
         <many-to-one class="nl.b3p.zoeker.configuratie.ZoekConfiguratie" name="inputzoekconfiguratie" column="inputzoekconfiguratie" lazy="false"/>
+        <property name="omschrijving"/>
     </class>
     <class name="nl.b3p.zoeker.configuratie.ResultaatAttribuut" table="resultaatveld">
         <id name="id">
@@ -36,6 +37,7 @@
         <property name="attribuutnaam"/>
         <property name="type" column="soort"/>
         <many-to-one class="nl.b3p.zoeker.configuratie.ZoekConfiguratie" name="zoekConfiguratie" column="zoekconfiguratie" lazy="false"/>
+        <property name="omschrijving"/>
     </class>
     <class name="nl.b3p.zoeker.configuratie.ZoekConfiguratie" table="zoekconfiguratie">
         <id name="id">
@@ -54,5 +56,6 @@
         </set>
         <many-to-one class="nl.b3p.zoeker.configuratie.Bron" column="parentbron" lazy="false" name="parentBron"/>
         <many-to-one class="nl.b3p.zoeker.configuratie.ZoekConfiguratie" column="parentzoekconfiguratie" lazy="false" name="parentZoekConfiguratie"/>
+        <property name="omschrijving"/>
     </class>
 </hibernate-mapping>

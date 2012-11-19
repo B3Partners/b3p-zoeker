@@ -56,6 +56,8 @@ public class ZoekConfiguratie {
      * wordt gehandeld alsof er geen lijst is.
      */
     private boolean resultListDynamic = true;
+    
+    private String omschrijving;
 
     private static final Log log = LogFactory.getLog(ZoekConfiguratie.class);
 
@@ -275,6 +277,14 @@ public class ZoekConfiguratie {
         cachedResultMap = new HashMap();
 
         log.info("Cache opzoeklijsten leeggemaakt.");
+    }
+
+    public String getOmschrijving() {
+        return omschrijving;
+    }
+
+    public void setOmschrijving(String omschrijving) {
+        this.omschrijving = omschrijving;
     }
 
     public static synchronized void setCachedResultList(ZoekConfiguratie zc,

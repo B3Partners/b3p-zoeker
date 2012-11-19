@@ -88,8 +88,8 @@ public class ZoekerTest{
         Bron bron = new Bron(1,"ro-online","http://afnemers.ruimtelijkeplannen.nl/afnemers/services?Version=1.0.0");
         ZoekConfiguratie zc = new ZoekConfiguratie(null,"planzoeken op geometry","app:Plangebied",bron,null);
 
-        ZoekAttribuut za = new ZoekAttribuut(null,"op geometry","geometrie", "geom",3,null);
-        ResultaatAttribuut ra = new ResultaatAttribuut(null,"Identificatie","app:naam","Plannaam",2,null);
+        ZoekAttribuut za = new ZoekAttribuut(null,"op geometry","geometrie", "geom",3,null,null);
+        ResultaatAttribuut ra = new ResultaatAttribuut(null,"Identificatie","app:naam","Plannaam",2,null,null);
 
         zc.addZoekAttribuut(za);
         zc.addResultaatAttribuut(ra);
@@ -103,8 +103,8 @@ public class ZoekerTest{
         Bron bron = new Bron(1,"cbs-wfs","http://public-wms.kaartenbalie.nl/wms/nederland?Version=1.0.0");
         ZoekConfiguratie zc = new ZoekConfiguratie(null,"Buurt zoeken op geometry","buurten_2006",bron,null);
 
-        ZoekAttribuut za = new ZoekAttribuut(null,"op geometry","msGeometry", "msGeometry",3,null);
-        ResultaatAttribuut ra = new ResultaatAttribuut(null,"bu_naam","bu_naam","bu_naam",2,null);
+        ZoekAttribuut za = new ZoekAttribuut(null,"op geometry","msGeometry", "msGeometry",3,null,null);
+        ResultaatAttribuut ra = new ResultaatAttribuut(null,"bu_naam","bu_naam","bu_naam",2,null,null);
 
         zc.addZoekAttribuut(za);
         zc.addResultaatAttribuut(ra);
@@ -119,8 +119,8 @@ public class ZoekerTest{
         Bron bron = new Bron(1,"arnhem","http://geo.arnhem.nl/ArcGIS/services/Binnenstad_WFS/MapServer/WFSServer?Version=1.0.0");
         ZoekConfiguratie zc = new ZoekConfiguratie(null,"winkels op geometry","FLAM_BINN_WINKEL_HORECA",bron,null);
 
-        ZoekAttribuut za = new ZoekAttribuut(null,"op SHAPE","SHAPE", "SHAPE",3,null);
-        ResultaatAttribuut ra = new ResultaatAttribuut(null,"NAAM","NAAM","NAAM",2,null);
+        ZoekAttribuut za = new ZoekAttribuut(null,"op SHAPE","SHAPE", "SHAPE",3,null,null);
+        ResultaatAttribuut ra = new ResultaatAttribuut(null,"NAAM","NAAM","NAAM",2,null,null);
 
         zc.addZoekAttribuut(za);
         zc.addResultaatAttribuut(ra);
@@ -133,8 +133,8 @@ public class ZoekerTest{
         Bron bron = new Bron(1,"cbs","jdbc:postgresql://b3p-demoserver:5432/demo_kaartenbalie","postgres","***REMOVED***",null);
         ZoekConfiguratie zc = new ZoekConfiguratie(null,"Buurten op geom","buurt_2006_cbs",bron,null);
 
-        ZoekAttribuut za = new ZoekAttribuut(null,"op geometry","the_geom", "the_geom",3,null);
-        ResultaatAttribuut ra = new ResultaatAttribuut(null,"bu_naam","bu_naam","bu_naam",2,null);
+        ZoekAttribuut za = new ZoekAttribuut(null,"op geometry","the_geom", "the_geom",3,null,null);
+        ResultaatAttribuut ra = new ResultaatAttribuut(null,"bu_naam","bu_naam","bu_naam",2,null,null);
 
         zc.addZoekAttribuut(za);
         zc.addResultaatAttribuut(ra);
@@ -149,9 +149,9 @@ public class ZoekerTest{
         Bron bron = new Bron(1,"cbs-wfs","http://public-wms.kaartenbalie.nl/wms/nederland?Version=1.0.0");
         ZoekConfiguratie zc = new ZoekConfiguratie(null,"Buurt zoeken op geometry","gemeenten_2006",bron,null);
 
-        ZoekAttribuut za1= new ZoekAttribuut(null,"aantal inwoners","aant_inw", "aantal inwoners",Attribuut.GROTER_DAN_TYPE,1);
-        ZoekAttribuut za2 = new ZoekAttribuut(null,"aantal inwoners","aant_inw", "aantal inwoners",Attribuut.KLEINER_DAN_TYPE,2);
-        ResultaatAttribuut ra = new ResultaatAttribuut(null,"Gemeente","gm_naam","Gemeente",2,null);
+        ZoekAttribuut za1= new ZoekAttribuut(null,"aantal inwoners","aant_inw", "aantal inwoners",Attribuut.GROTER_DAN_TYPE,1,null);
+        ZoekAttribuut za2 = new ZoekAttribuut(null,"aantal inwoners","aant_inw", "aantal inwoners",Attribuut.KLEINER_DAN_TYPE,2,null);
+        ResultaatAttribuut ra = new ResultaatAttribuut(null,"Gemeente","gm_naam","Gemeente",2,null,null);
 
         zc.addZoekAttribuut(za1);
         zc.addZoekAttribuut(za2);
@@ -165,9 +165,9 @@ public class ZoekerTest{
         Bron bron = new Bron(1,"cbs-wfs","http://public-wms.kaartenbalie.nl/wms/nederland?Version=1.0.0");
         ZoekConfiguratie zc = new ZoekConfiguratie(null,"Buurt zoeken","buurten_2006",bron,null);
 
-        ZoekAttribuut za1= new ZoekAttribuut(null,"aantal inwoners","gm_naam", "aantal inwoners",Attribuut.GEEN_TYPE,1);
-        ZoekAttribuut za = new ZoekAttribuut(null,"aantal inwoners","bu_naam", "aantal inwoners",Attribuut.GEEN_TYPE,2);        
-        ResultaatAttribuut ra = new ResultaatAttribuut(null,"Gemeente","gm_naam","Gemeente",2,null);
+        ZoekAttribuut za1= new ZoekAttribuut(null,"aantal inwoners","gm_naam", "aantal inwoners",Attribuut.GEEN_TYPE,1,null);
+        ZoekAttribuut za = new ZoekAttribuut(null,"aantal inwoners","bu_naam", "aantal inwoners",Attribuut.GEEN_TYPE,2,null);        
+        ResultaatAttribuut ra = new ResultaatAttribuut(null,"Gemeente","gm_naam","Gemeente",2,null,null);
 
         zc.addZoekAttribuut(za);
         zc.addZoekAttribuut(za1);
@@ -181,9 +181,9 @@ public class ZoekerTest{
         Bron bron = new Bron(1,"cbs-wfs","http://public-wms.kaartenbalie.nl/wms/nederland?Version=1.0.0");
         ZoekConfiguratie zc = new ZoekConfiguratie(null,"Buurt zoeken","buurten_2006",bron,null);
 
-        ZoekAttribuut za = new ZoekAttribuut(null,"aantal inwoners","bu_naam", "aantal inwoners",Attribuut.GEEN_TYPE,2);
-        ResultaatAttribuut ra = new ResultaatAttribuut(null,"Gemeente","gm_naam","Gemeente",Attribuut.TOON_TYPE,1);
-        ResultaatAttribuut ra1 = new ResultaatAttribuut(null,"aant_man","aant_man","aant_man",Attribuut.TOON_TYPE,2);
+        ZoekAttribuut za = new ZoekAttribuut(null,"aantal inwoners","bu_naam", "aantal inwoners",Attribuut.GEEN_TYPE,2,null);
+        ResultaatAttribuut ra = new ResultaatAttribuut(null,"Gemeente","gm_naam","Gemeente",Attribuut.TOON_TYPE,1,null);
+        ResultaatAttribuut ra1 = new ResultaatAttribuut(null,"aant_man","aant_man","aant_man",Attribuut.TOON_TYPE,2,null);
 
         zc.addZoekAttribuut(za);
         zc.addResultaatAttribuut(ra);
@@ -199,8 +199,8 @@ public class ZoekerTest{
         Bron bron = new Bron(1,"Arnhem WFS","http://www.geo.arnhem.nl/ArcGIS/services/Totaal_WFS/MapServer/WFSServer?Version=1.0.0");
         ZoekConfiguratie zc = new ZoekConfiguratie(null,"Wijk zoeken","Totaal_WFS:GIGA_GRNS_WIJKEN",bron,null);
 
-        ZoekAttribuut za = new ZoekAttribuut(null,"WIJKNAAM","WIJKNAAM", "WIJKNAAM",Attribuut.GEEN_TYPE,2);
-        ResultaatAttribuut ra = new ResultaatAttribuut(null,"WIJKNAAM","WIJKNAAM","WIJKNAAM",Attribuut.TOON_TYPE,1);
+        ZoekAttribuut za = new ZoekAttribuut(null,"WIJKNAAM","WIJKNAAM", "WIJKNAAM",Attribuut.GEEN_TYPE,2,null);
+        ResultaatAttribuut ra = new ResultaatAttribuut(null,"WIJKNAAM","WIJKNAAM","WIJKNAAM",Attribuut.TOON_TYPE,1,null);
         
         zc.addZoekAttribuut(za);
         zc.addResultaatAttribuut(ra);
