@@ -17,10 +17,14 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import nl.b3p.zoeker.configuratie.*;
 import nl.b3p.zoeker.hibernate.MyEMFDatabase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.directwebremoting.WebContext;
+import org.directwebremoting.WebContextFactory;
 import org.geotools.data.DataStore;
 import org.geotools.data.DefaultQuery;
 import org.geotools.data.FeatureSource;
@@ -155,7 +159,7 @@ public class Zoeker {
         }
         return null;
     }
-    
+
     public List<ZoekResultaat> zoekMetConfiguratie(ZoekConfiguratie zc, String[] searchStrings, Integer maxResults, List<ZoekResultaat> results) {
         return zoekMetConfiguratie(zc, searchStrings, maxResults, results, false, 0, 0);
     }
@@ -251,6 +255,21 @@ public class Zoeker {
                         if (zoekVeld.getType() == Attribuut.LOCATIE_GEOM__TYPE) {
                             calculateDistance = true;
                             locationWkt = searchStrings[i];
+
+                            /* Indien er een start locatie op de sessie is gezet deze gebruiken */
+                            WebContext ctx = WebContextFactory.get();
+                            if (ctx != null) {
+                                HttpServletRequest request = ctx.getHttpServletRequest();
+                                HttpSession session = request.getSession(true);
+                                String startGeom = (String) session.getAttribute("startGeom");
+
+                                if (startGeom != null && !startGeom.equals("")) {
+                                    locationWkt = startGeom;
+
+                                    log.debug("Zoeker startlocatie: " + locationWkt);
+                                }
+                            }
+
                         }
                     }
                     //maak een and filter of een single filter aan de hand van het aantal filters
@@ -293,21 +312,21 @@ public class Zoeker {
                     }
 
                     query.setPropertyNames(properties);
-                    
+
                     /* Pagination for FeatureCollection */
                     final FeatureSource fs2 = fs;
-                    int count = fs2.getCount(query);        
-                    
+                    int count = fs2.getCount(query);
+
                     if (count < limit) {
                         limit = count;
                     }
-                    
-                    boolean startIndexSupported = fs.getQueryCapabilities().isOffsetSupported();                    
+
+                    boolean startIndexSupported = fs.getQueryCapabilities().isOffsetSupported();
                     if (usePagination && startIndexSupported) {
                         query.setStartIndex(startIndex);
                         query.setMaxFeatures(Math.min(limit + (startIndexSupported ? 0 : startIndex), maxResults));
-                    }                
-                    
+                    }
+
                     //Haal de featureCollection met de query op.
                     fc = fs.getFeatures(query);
                     //Maak de FeatureIterator aan (hier wordt het daad werkelijke verzoek gedaan.
@@ -347,14 +366,14 @@ public class Zoeker {
 
                             if (f.getType().getGeometryDescriptor() != null) {
                                 Geometry resultGeom = (Geometry) f.getDefaultGeometryProperty().getValue();
-                                
+
                                 double distance = calcDistance(locationGeom, resultGeom);
 
-                                p.addAttribuut(createAfstandResultaatAttribuut(distance));
+                                p.addAttribuut(createAfstandResultaatAttribuut(distance, zc));
                                 p.setZoekConfiguratie(zc);
                             }
                         }
-                        
+
                         p.setCount(count);
 
                         /* Niet ArrayList.contains() gebruiken omdat daar alle attributen worden gecontrolleerd.
@@ -401,7 +420,7 @@ public class Zoeker {
                 ds.dispose();
             }
         }
-        
+
         Collections.sort(zoekResultaten);
         if (!zc.isResultListDynamic()) {
             ZoekConfiguratie.setCachedResultList(zc, zoekResultaten, searchStrings, maxResults);
@@ -423,20 +442,23 @@ public class Zoeker {
         return geom;
     }
 
-    private ZoekResultaatAttribuut createAfstandResultaatAttribuut(double distance) {
+    private ZoekResultaatAttribuut createAfstandResultaatAttribuut(double distance, ZoekConfiguratie zc) {
         ResultaatAttribuut afstandAttr = new ResultaatAttribuut();
         afstandAttr.setLabel("afstand");
         afstandAttr.setAttribuutnaam("afstand");
-        afstandAttr.setType(Attribuut.MEASURE_TYPE);
+        afstandAttr.setType(Attribuut.TOON_TYPE);
         afstandAttr.setVolgorde(9999);
+        //afstandAttr.setNaam("");
+        //afstandAttr.setId(120);
+        //afstandAttr.setZoekConfiguratie(zc);
 
         DecimalFormat twoDForm = new DecimalFormat("#.##");
-		String waarde = twoDForm.format(distance);
-        
+        String waarde = twoDForm.format(distance);
+
         if (waarde.contains(",")) {
             waarde = waarde.replace(",", ".");
         }
-        
+
         ZoekResultaatAttribuut zra = new ZoekResultaatAttribuut(afstandAttr);
         zra.setWaarde(waarde);
 
@@ -445,11 +467,11 @@ public class Zoeker {
 
     private double calcDistance(Geometry geom1, Geometry geometry2) {
         double distance = -1;
-        
+
         if (geom1 == null || geometry2 == null) {
             return distance;
         }
-        
+
         try {
             CoordinateReferenceSystem crs = CRS.decode("EPSG:28992");
             Coordinate start = new Coordinate(geom1.getCentroid().getX(), geom1.getCentroid().getY());
@@ -458,10 +480,10 @@ public class Zoeker {
             if (start != null && end != null) {
                 distance = JTS.orthodromicDistance(start, end, crs);
             }
-        } catch (Exception ex) {      
+        } catch (Exception ex) {
             log.error("Error calculatin distance: ", ex);
         }
-        
+
         return distance;
     }
 

@@ -18,6 +18,9 @@ public class Attribuut {
     public final static int ID_TYPE=1;
     public final static int TOON_TYPE=2;
     public final static int GEOMETRY_TYPE=3;
+    
+    public final static int START_GEOMETRY_TYPE = 33;
+    
     //datum typen
     public final static int KLEINER_DAN_TYPE=4;
     public final static int GROTER_DAN_TYPE=5;
