@@ -261,10 +261,10 @@ public class Zoeker {
                             if (ctx != null) {
                                 HttpServletRequest request = ctx.getHttpServletRequest();
                                 HttpSession session = request.getSession(true);
-                                String startGeom = (String) session.getAttribute("startGeom");
+                                A11YResult a11yResult = (A11YResult) session.getAttribute("a11yResult");
 
-                                if (startGeom != null && !startGeom.equals("")) {
-                                    locationWkt = startGeom;
+                                if (a11yResult != null) {
+                                    locationWkt = a11yResult.getStartWkt();
 
                                     log.debug("Zoeker startlocatie: " + locationWkt);
                                 }
@@ -452,7 +452,7 @@ public class Zoeker {
         //afstandAttr.setId(120);
         //afstandAttr.setZoekConfiguratie(zc);
 
-        DecimalFormat twoDForm = new DecimalFormat("#.##");
+        DecimalFormat twoDForm = new DecimalFormat("#");
         String waarde = twoDForm.format(distance);
 
         if (waarde.contains(",")) {
@@ -460,7 +460,7 @@ public class Zoeker {
         }
 
         ZoekResultaatAttribuut zra = new ZoekResultaatAttribuut(afstandAttr);
-        zra.setWaarde(waarde);
+        zra.setWaarde(waarde + " meter");
 
         return zra;
     }
