@@ -29,7 +29,7 @@ import org.geotools.data.DataStore;
 import org.geotools.data.DefaultQuery;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.SchemaNotFoundException;
-import org.geotools.data.ows.WFSCapabilities;
+import org.geotools.data.wfs.v1_0_0.WFSCapabilities;
 import org.geotools.data.wfs.v1_0_0.WFS_1_0_0_DataStore;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.GeoTools;
@@ -176,7 +176,7 @@ public class Zoeker {
      * @param results: De al gevonden resultaten (de nieuwe resultaten worden
      * hier aan toegevoegd.
      */
-    public List<ZoekResultaat> zoekMetConfiguratie(ZoekConfiguratie zc, String[] searchStrings, Integer maxResults, List<ZoekResultaat> results, boolean usePagination, int startIndex, int limit) {
+    public List<ZoekResultaat> zoekMetConfiguratie(ZoekConfiguratie zc, String[] searchStrings, Integer maxResults, List<ZoekResultaat> results, boolean usePagination, int startIndex, int limit) {        
         if (maxResults == null || maxResults.intValue() == 0) {
             maxResults = defaultMaxResults;
         }
@@ -257,19 +257,10 @@ public class Zoeker {
                             locationWkt = searchStrings[i];
 
                             /* Indien er een start locatie op de sessie is gezet deze gebruiken */
-                            WebContext ctx = WebContextFactory.get();
-                            if (ctx != null) {
-                                HttpServletRequest request = ctx.getHttpServletRequest();
-                                HttpSession session = request.getSession(true);
-                                A11YResult a11yResult = (A11YResult) session.getAttribute("a11yResult");
-
-                                if (a11yResult != null) {
-                                    locationWkt = a11yResult.getStartWkt();
-
-                                    log.debug("Zoeker startlocatie: " + locationWkt);
-                                }
+                            String startLocatie = getStartLocationFromSession();
+                            if (startLocatie != null) {
+                                locationWkt = startLocatie;
                             }
-
                         }
                     }
                     //maak een and filter of een single filter aan de hand van het aantal filters
@@ -361,7 +352,7 @@ public class Zoeker {
                         }
 
                         /* Indien zoekveld type 110. Afstand berekenen en toevoegen */
-                        if (calculateDistance && locationWkt != null) {
+                        if (calculateDistance && locationWkt != null && !locationWkt.equals("")) {
                             Geometry locationGeom = createGeomFromWkt(locationWkt);
 
                             if (f.getType().getGeometryDescriptor() != null) {
@@ -428,6 +419,25 @@ public class Zoeker {
         }
 
         return zoekResultaten;
+    }
+    
+    private String getStartLocationFromSession() {
+        String locationWkt = null;
+        
+        WebContext ctx = WebContextFactory.get();
+        if (ctx != null) {
+            HttpServletRequest request = ctx.getHttpServletRequest();
+            HttpSession session = request.getSession(true);
+            A11YResult a11yResult = (A11YResult) session.getAttribute("a11yResult");
+
+            if (a11yResult != null) {
+                locationWkt = a11yResult.getStartWkt();
+
+                log.debug("Zoeker startlocatie: " + locationWkt);
+            }
+        }
+        
+        return locationWkt;
     }
 
     private Geometry createGeomFromWkt(String wkt) {
@@ -533,7 +543,7 @@ public class Zoeker {
      * @throws java.io.IOException
      * @deprecated: use b.toDatastore();
      */
-    public static DataStore getDataStore(Bron b) throws IOException, Exception {
+    public static DataStore getDataStore(Bron b) throws IOException, Exception {        
         return b.toDatastore();
     }
 
@@ -543,16 +553,29 @@ public class Zoeker {
      * afhankelijk kunnen zijn van elkaar.
      */
     private Filter createFilter(ZoekAttribuut[] zoekVelden, String[] searchStrings, int index, DataStore ds, FilterFactory2 ff, FeatureType ft) throws Exception {
-        String searchString = searchStrings[index];
+        String searchString = searchStrings[index];        
+        
+        ZoekAttribuut zoekVeld = zoekVelden[index];
+        if (zoekVeld.getType() == Attribuut.LOCATIE_GEOM__TYPE) {
+            String startLocatie = getStartLocationFromSession();
+            if (startLocatie != null) {
+                searchString = startLocatie;
+            }
+        }
+        
         if (searchString == null || searchString.length() == 0) {
             return null;
         }
-        ZoekAttribuut zoekVeld = zoekVelden[index];
+        
         Filter filter = null;
-        if (zoekVeld.getType() == Attribuut.GEOMETRY_TYPE) {
+        if (zoekVeld.getType() == Attribuut.GEOMETRY_TYPE
+                || zoekVeld.getType() == Attribuut.LOCATIE_GEOM__TYPE) {
+            
             WKTReader wktreader = new WKTReader(new GeometryFactory(new PrecisionModel(), 28992));
             try {
                 Geometry geom = wktreader.read(searchString);
+                Double straal = null;
+                
                 //zijn er nog zoekAttributen ingevuld die betrekking hebben op de geometry (zoals straal)
                 for (int i = 0; i < zoekVelden.length; i++) {
                     //skip voor dit zoekveld
@@ -562,14 +585,18 @@ public class Zoeker {
                     //bij straal maak een buffer.
                     if (zoekVelden[i].getType() == Attribuut.STRAAL_TYPE && searchStrings[i] != null && searchStrings[i].length() > 0) {
                         try {
-                            double straal = Double.parseDouble(searchStrings[i]);
+                            straal = Double.parseDouble(searchStrings[i]);
                             geom = geom.buffer(straal);
                         } catch (NumberFormatException nfe) {
                             log.error("Ingevulde zoekopdracht " + zoekVelden[i].getNaam() + "moet een nummer zijn", nfe);
                         }
                     }
                 }
-                filter = ff.within(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(geom));
+                /* TODO: Indien de beheerder in de zoekingang geen straalveld heeft gemaakt maar wel
+                 * een startlocatie zoekveld dan de standaard straal gebruiken uit de beheeromgeving */
+                if (straal != null && straal > 0) {
+                    filter = ff.within(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(geom));
+                }
             } catch (Exception e) {
                 log.error("Fout bij parsen wkt geometry", e);
             }

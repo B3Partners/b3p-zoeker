@@ -16,13 +16,12 @@ import org.apache.commons.logging.LogFactory;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
 import org.geotools.data.oracle.OracleNGDataStoreFactory;
-import org.geotools.data.ows.FeatureSetDescription;
-import org.geotools.data.ows.WFSCapabilities;
 import org.geotools.data.postgis.PostgisNGDataStoreFactory;
 import org.geotools.data.wfs.WFSDataStore;
 import org.geotools.data.wfs.WFSDataStoreFactory;
+import org.geotools.data.wfs.v1_0_0.FeatureSetDescription;
+import org.geotools.data.wfs.v1_0_0.WFSCapabilities;
 import org.geotools.data.wfs.v1_0_0.WFS_1_0_0_DataStore;
-import org.geotools.data.wfs.v1_1_0.WFS_1_1_0_DataStore;
 import org.geotools.filter.FilterCapabilities;
 import org.geotools.xml.SchemaFactory;
 import org.geotools.xml.schema.Schema;
@@ -310,7 +309,7 @@ public class Bron {
     public static synchronized void putWfsCache(HashMap p, WFSDataStore ds) {
         perParameterSetDataStoreCache.put(p, ds);
     }
-    public static synchronized WFSDataStore getWfsCache(HashMap p) {
+    public static synchronized WFSDataStore getWfsCache(HashMap p) {        
         if (isCacheExpired()) {
             flushWfsCache();
 
@@ -351,7 +350,7 @@ public class Bron {
     }
 
 
-    public static DataStore createDataStoreFromParams(Map params) throws IOException, Exception {
+    public static DataStore createDataStoreFromParams(Map params) throws IOException, Exception {        
         DataStore ds = null;
         try {
             ds = repairDataStore(DataStoreFinder.getDataStore(params));
@@ -361,7 +360,7 @@ public class Bron {
         return ds;
     }
 
-    private static DataStore repairDataStore(DataStore ds) throws Exception {
+    private static DataStore repairDataStore(DataStore ds) throws Exception {        
         if (ds instanceof WFS_1_0_0_DataStore) {
             WFS_1_0_0_DataStore wfs100ds = (WFS_1_0_0_DataStore) ds;
             WFSCapabilities wfscap = wfs100ds.getCapabilities();
