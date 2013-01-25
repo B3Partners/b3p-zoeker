@@ -32,6 +32,7 @@
         <property name="inputtype"/>
         <property name="inputsize"/>
         <many-to-one class="nl.b3p.zoeker.configuratie.ZoekConfiguratie" name="inputzoekconfiguratie" column="inputzoekconfiguratie" lazy="false"/>
+        <property name="dropDownValues" column="dropdown_values" />
         <property name="omschrijving" type="materialized_clob"/>
     </class>
     <class name="nl.b3p.zoeker.configuratie.ResultaatAttribuut" table="resultaatveld">

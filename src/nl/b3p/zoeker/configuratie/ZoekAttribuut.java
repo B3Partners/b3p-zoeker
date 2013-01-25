@@ -93,6 +93,7 @@ public class ZoekAttribuut extends Attribuut {
         json.put("volgorde", getVolgorde());
         json.put("inputType", getInputtype());
         json.put("inputSize", getInputsize());
+        json.put("dropDownValues", getDropDownValues());
 
         if (getInputzoekconfiguratie() != null)
             json.put("inputZoekConfiguratie", getInputzoekconfiguratie().getId());
