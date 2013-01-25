@@ -15,8 +15,8 @@ public class ResultaatAttribuut extends Attribuut{
         
     }
     public ResultaatAttribuut(Integer id, String naam, String attribuutnaam,
-            String label, Integer type, Integer volgorde, String omschrijving) {
-        super(id,naam,attribuutnaam,label,type,volgorde,omschrijving);
+            String label, Integer type, Integer volgorde, String omschrijving, String dropDownValues) {
+        super(id,naam,attribuutnaam,label,type,volgorde,omschrijving,null);
     }
 
 }

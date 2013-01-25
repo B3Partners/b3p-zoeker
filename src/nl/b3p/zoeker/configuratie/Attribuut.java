@@ -46,7 +46,8 @@ public class Attribuut {
     private Integer volgorde;
     private ZoekConfiguratie zoekConfiguratie;
     
-    private String omschrijving;
+    private String dropDownValues;
+    private String omschrijving;    
     
     public Attribuut(){}
     public Attribuut(Attribuut a){
@@ -57,20 +58,22 @@ public class Attribuut {
         this.type=a.getType();
         this.volgorde=a.getVolgorde();
         this.zoekConfiguratie=a.getZoekConfiguratie();
+        this.dropDownValues = a.getDropDownValues();
         this.omschrijving = a.getOmschrijving();
     }
     public Attribuut(Integer id, String naam, String attribuutnaam, String label,
-            Integer type, Integer volgorde, String omschrijving){
+            Integer type, Integer volgorde, String omschrijving, String dropDownValues){
         this.id=id;
         this.naam=naam;
         this.attribuutnaam=attribuutnaam;
         this.label=label;
         this.type=type;
         this.volgorde=volgorde;
+        this.dropDownValues = dropDownValues;
         this.omschrijving=omschrijving;
     }
     public Attribuut(Integer id, String attribuutnaam, String label){
-        this(id,null,attribuutnaam,label,null,null,null);
+        this(id,null,attribuutnaam,label,null,null,null, null);
     }
 
     public Integer getId() {
@@ -153,6 +156,14 @@ public class Attribuut {
         this.volgorde = volgorde;
     }
 
+    public String getDropDownValues() {
+        return dropDownValues;
+    }
+
+    public void setDropDownValues(String dropDownValues) {
+        this.dropDownValues = dropDownValues;
+    }
+
     public String getOmschrijving() {
         return omschrijving;
     }
@@ -169,10 +180,12 @@ public class Attribuut {
         json.put("label",getLabel());
         json.put("type",getType());
         json.put("volgorde",getVolgorde());
+        json.put("dropDownValues",getDropDownValues());
         json.put("omschrijving",getOmschrijving());
         return json;
     }
     
+    @Override
     public String toString(){
         String returnValue="";
         returnValue+=this.getId();
@@ -199,6 +212,5 @@ public class Attribuut {
             returnValue = returnValue.substring(first+1,returnValue.length());
         }
         return returnValue;
-
     }
 }
