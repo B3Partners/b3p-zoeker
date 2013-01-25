@@ -439,6 +439,20 @@ public class Zoeker {
         
         return locationWkt;
     }
+    
+    private Integer getSearchRadiusFromSession() {
+        Integer radius = null;
+        
+        WebContext ctx = WebContextFactory.get();
+        if (ctx != null) {
+            HttpServletRequest request = ctx.getHttpServletRequest();
+            HttpSession session = request.getSession(true);
+            
+            radius = (Integer) session.getAttribute("defaultSearchRadius");            
+        }
+        
+        return radius;
+    }
 
     private Geometry createGeomFromWkt(String wkt) {
         WKTReader wktreader = new WKTReader(new GeometryFactory(new PrecisionModel(), 28992));
@@ -554,10 +568,14 @@ public class Zoeker {
      */
     private Filter createFilter(ZoekAttribuut[] zoekVelden, String[] searchStrings, int index, DataStore ds, FilterFactory2 ff, FeatureType ft) throws Exception {
         String searchString = searchStrings[index];        
+        Integer searchRadius = null;
+        String startLocatie = null;
         
         ZoekAttribuut zoekVeld = zoekVelden[index];
         if (zoekVeld.getType() == Attribuut.LOCATIE_GEOM__TYPE) {
-            String startLocatie = getStartLocationFromSession();
+            startLocatie = getStartLocationFromSession();
+            searchRadius = getSearchRadiusFromSession();
+            
             if (startLocatie != null) {
                 searchString = startLocatie;
             }
@@ -585,7 +603,7 @@ public class Zoeker {
                     //bij straal maak een buffer.
                     if (zoekVelden[i].getType() == Attribuut.STRAAL_TYPE && searchStrings[i] != null && searchStrings[i].length() > 0) {
                         try {
-                            straal = Double.parseDouble(searchStrings[i]);
+                            straal = Double.parseDouble(searchStrings[i]);                            
                             geom = geom.buffer(straal);
                         } catch (NumberFormatException nfe) {
                             log.error("Ingevulde zoekopdracht " + zoekVelden[i].getNaam() + "moet een nummer zijn", nfe);
@@ -597,6 +615,16 @@ public class Zoeker {
                 if (straal != null && straal > 0) {
                     filter = ff.within(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(geom));
                 }
+                
+                if (straal == null && searchRadius != null && searchRadius > 0 
+                        && startLocatie != null) {
+                    
+                    geom = geom.buffer(searchRadius);
+                    filter = ff.within(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(geom));
+                    
+                    log.debug("Using the default search radius of " + searchRadius);
+                }
+                
             } catch (Exception e) {
                 log.error("Fout bij parsen wkt geometry", e);
             }
