@@ -57,6 +57,16 @@ public class ZoekAttribuut extends Attribuut {
 
     public ZoekAttribuut() {
     }
+    
+    public ZoekAttribuut(Integer id, String naam, String attribuutnaam, String label,
+            Integer type, Integer volgorde) {
+        super(id, naam, attribuutnaam, label, type, volgorde, null, null);
+    }
+    
+    public ZoekAttribuut(Integer id, String naam, String attribuutnaam, String label,
+            Integer type, Integer volgorde, String omschrijving) {
+        super(id, naam, attribuutnaam, label, type, volgorde, omschrijving, null);
+    }
 
     public ZoekAttribuut(Integer id, String naam, String attribuutnaam, String label,
             Integer type, Integer volgorde, String omschrijving, String dropDownValues) {
