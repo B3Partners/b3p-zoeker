@@ -36,7 +36,6 @@ import org.geotools.factory.GeoTools;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.filter.FilterCapabilities;
-import org.geotools.filter.SortBy;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.opengis.feature.Feature;
@@ -45,6 +44,7 @@ import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
+import org.opengis.filter.sort.SortBy;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
@@ -482,9 +482,6 @@ public class Zoeker {
         afstandAttr.setAttribuutnaam("afstand");
         afstandAttr.setType(Attribuut.TOON_TYPE);
         afstandAttr.setVolgorde(9999);
-        //afstandAttr.setNaam("");
-        //afstandAttr.setId(120);
-        //afstandAttr.setZoekConfiguratie(zc);
         
         distance /= 1000;
         

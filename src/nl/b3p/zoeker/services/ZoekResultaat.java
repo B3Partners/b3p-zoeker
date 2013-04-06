@@ -171,7 +171,8 @@ public class ZoekResultaat implements Comparable {
     public Double getMeasure() {
         ArrayList waarden = getWaarden(Attribuut.MEASURE_TYPE);
         if (waarden.size()>0){
-            return Double.parseDouble(waarden.get(0).toString());
+            String zonderKm = waarden.get(0).toString().replace("km", "").trim();
+            return Double.parseDouble(zonderKm);
         }
         return null;
     }
@@ -184,7 +185,7 @@ public class ZoekResultaat implements Comparable {
         if (getAttributen() != null) {
             for (int i = 0; i < getAttributen().size(); i++) {
                 ZoekResultaatAttribuut a = (ZoekResultaatAttribuut) getAttributen().get(i);
-                if (a.getType() != null && a.getType() == type) {
+                if ( (a.getType() != null && a.getType() == type) || (type == 120 &&a.getLabel().equalsIgnoreCase("afstand")) ) {
                     returnValue.add(a.getWaarde());
                 }
             }
@@ -218,6 +219,14 @@ public class ZoekResultaat implements Comparable {
             return 1;
         }
         ZoekResultaat zoekResultaat = (ZoekResultaat) o;
+        
+        if (this.getMeasure()!=null){
+            int comp = this.getMeasure().compareTo(zoekResultaat.getMeasure());
+            if (comp != 0){
+                return comp;
+            }
+        }
+        
         ArrayList<ZoekResultaatAttribuut> zAttributen = (ArrayList<ZoekResultaatAttribuut>) zoekResultaat.getAttributen();
         if (zAttributen == null) {
             return 1;
@@ -227,13 +236,7 @@ public class ZoekResultaat implements Comparable {
         }
         if (this.attributen.size() != zAttributen.size()) {
             return 1;
-        }
-        if (this.getMeasure()!=null){
-            int comp = this.getMeasure().compareTo(zoekResultaat.getMeasure());
-            if (comp != 0){
-                return comp;
-            }
-        }
+        }        
 
         //walk over all attributes and compare the attributes
         for (int i = 0; i < this.attributen.size(); i++) {
