@@ -164,6 +164,10 @@ public class Zoeker {
     public List<ZoekResultaat> zoekMetConfiguratie(ZoekConfiguratie zc, String[] searchStrings, Integer maxResults, List<ZoekResultaat> results) {
         return zoekMetConfiguratie(zc, searchStrings, maxResults, results, false, 0, 0);
     }
+    
+    public List<ZoekResultaat> zoekMetConfiguratie(ZoekConfiguratie zc, String[] searchStrings, Integer maxResults, List<ZoekResultaat> results, boolean usePagination, int startIndex, int limit) {        
+        return zoekMetConfiguratie(zc, searchStrings, maxResults, results, false, 0, 0, null);
+    }
 
     /**
      * Zoek moet configuratie (search Strings moet gelijk zijn aan aantal
@@ -177,7 +181,7 @@ public class Zoeker {
      * @param results: De al gevonden resultaten (de nieuwe resultaten worden
      * hier aan toegevoegd.
      */
-    public List<ZoekResultaat> zoekMetConfiguratie(ZoekConfiguratie zc, String[] searchStrings, Integer maxResults, List<ZoekResultaat> results, boolean usePagination, int startIndex, int limit) {        
+    public List<ZoekResultaat> zoekMetConfiguratie(ZoekConfiguratie zc, String[] searchStrings, Integer maxResults, List<ZoekResultaat> results, boolean usePagination, int startIndex, int limit, A11YResult currentA11YResult) {        
         if (maxResults == null || maxResults.intValue() == 0) {
             maxResults = defaultMaxResults;
         }
@@ -261,6 +265,10 @@ public class Zoeker {
                             String startLocatie = getStartLocationFromSession();
                             if (startLocatie != null) {
                                 locationWkt = startLocatie;
+                            }
+                            
+                            if (currentA11YResult != null) {
+                                locationWkt = currentA11YResult.getStartWkt();
                             }
                         }
                     }
