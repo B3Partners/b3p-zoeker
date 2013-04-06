@@ -477,8 +477,10 @@ public class Zoeker {
         //afstandAttr.setNaam("");
         //afstandAttr.setId(120);
         //afstandAttr.setZoekConfiguratie(zc);
-
-        DecimalFormat twoDForm = new DecimalFormat("#");
+        
+        distance /= 1000;
+        
+        DecimalFormat twoDForm = new DecimalFormat("#.##");
         String waarde = twoDForm.format(distance);
 
         if (waarde.contains(",")) {
@@ -486,7 +488,7 @@ public class Zoeker {
         }
 
         ZoekResultaatAttribuut zra = new ZoekResultaatAttribuut(afstandAttr);
-        zra.setWaarde(waarde + " meter");
+        zra.setWaarde(waarde + " km");
 
         return zra;
     }
