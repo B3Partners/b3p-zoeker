@@ -36,6 +36,7 @@ import org.geotools.factory.GeoTools;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.filter.FilterCapabilities;
+import org.geotools.filter.SortBy;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.opengis.feature.Feature;
@@ -314,6 +315,7 @@ public class Zoeker {
 
                     boolean startIndexSupported = fs.getQueryCapabilities().isOffsetSupported();
                     if (usePagination && startIndexSupported) {
+                        query.setSortBy(SortBy.UNSORTED);
                         query.setStartIndex(startIndex);
                         query.setMaxFeatures(Math.min(limit + (startIndexSupported ? 0 : startIndex), maxResults));
                     }
