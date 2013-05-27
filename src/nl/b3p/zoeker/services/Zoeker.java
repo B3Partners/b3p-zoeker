@@ -164,8 +164,8 @@ public class Zoeker {
     public List<ZoekResultaat> zoekMetConfiguratie(ZoekConfiguratie zc, String[] searchStrings, Integer maxResults, List<ZoekResultaat> results) {
         return zoekMetConfiguratie(zc, searchStrings, maxResults, results, false, 0, 0);
     }
-    
-    public List<ZoekResultaat> zoekMetConfiguratie(ZoekConfiguratie zc, String[] searchStrings, Integer maxResults, List<ZoekResultaat> results, boolean usePagination, int startIndex, int limit) {        
+
+    public List<ZoekResultaat> zoekMetConfiguratie(ZoekConfiguratie zc, String[] searchStrings, Integer maxResults, List<ZoekResultaat> results, boolean usePagination, int startIndex, int limit) {
         return zoekMetConfiguratie(zc, searchStrings, maxResults, results, false, 0, 0, null);
     }
 
@@ -181,7 +181,7 @@ public class Zoeker {
      * @param results: De al gevonden resultaten (de nieuwe resultaten worden
      * hier aan toegevoegd.
      */
-    public List<ZoekResultaat> zoekMetConfiguratie(ZoekConfiguratie zc, String[] searchStrings, Integer maxResults, List<ZoekResultaat> results, boolean usePagination, int startIndex, int limit, A11YResult currentA11YResult) {        
+    public List<ZoekResultaat> zoekMetConfiguratie(ZoekConfiguratie zc, String[] searchStrings, Integer maxResults, List<ZoekResultaat> results, boolean usePagination, int startIndex, int limit, A11YResult currentA11YResult) {
         if (maxResults == null || maxResults.intValue() == 0) {
             maxResults = defaultMaxResults;
         }
@@ -266,7 +266,7 @@ public class Zoeker {
                             if (startLocatie != null) {
                                 locationWkt = startLocatie;
                             }
-                            
+
                             if (currentA11YResult != null) {
                                 locationWkt = currentA11YResult.getStartWkt();
                             }
@@ -430,10 +430,10 @@ public class Zoeker {
 
         return zoekResultaten;
     }
-    
+
     private String getStartLocationFromSession() {
         String locationWkt = null;
-        
+
         WebContext ctx = WebContextFactory.get();
         if (ctx != null) {
             HttpServletRequest request = ctx.getHttpServletRequest();
@@ -446,21 +446,21 @@ public class Zoeker {
                 log.debug("Zoeker startlocatie: " + locationWkt);
             }
         }
-        
+
         return locationWkt;
     }
-    
+
     private Integer getSearchRadiusFromSession() {
         Integer radius = null;
-        
+
         WebContext ctx = WebContextFactory.get();
         if (ctx != null) {
             HttpServletRequest request = ctx.getHttpServletRequest();
             HttpSession session = request.getSession(true);
-            
-            radius = (Integer) session.getAttribute("defaultSearchRadius");            
+
+            radius = (Integer) session.getAttribute("defaultSearchRadius");
         }
-        
+
         return radius;
     }
 
@@ -482,9 +482,9 @@ public class Zoeker {
         afstandAttr.setAttribuutnaam("afstand");
         afstandAttr.setType(Attribuut.TOON_TYPE);
         afstandAttr.setVolgorde(9999);
-        
+
         distance /= 1000;
-        
+
         DecimalFormat twoDForm = new DecimalFormat("#.##");
         String waarde = twoDForm.format(distance);
 
@@ -529,7 +529,11 @@ public class Zoeker {
             EntityTransaction tx = em.getTransaction();
             tx.begin();
             try {
-                returnList = em.createQuery("from ZoekConfiguratie z").getResultList();
+                returnList = em.createQuery("from ZoekConfiguratie z"
+                        + " LEFT JOIN FETCH z.zoekVelden"
+                        + " LEFT JOIN FETCH z.resultaatVelden"
+                        + " LEFT JOIN FETCH z.parentBron").getResultList();
+
                 tx.commit();
             } catch (Exception ex) {
                 log.error("Exception occured" + (tx.isActive() ? ", rollback" : "tx not active"), ex);
@@ -566,7 +570,7 @@ public class Zoeker {
      * @throws java.io.IOException
      * @deprecated: use b.toDatastore();
      */
-    public static DataStore getDataStore(Bron b) throws IOException, Exception {        
+    public static DataStore getDataStore(Bron b) throws IOException, Exception {
         return b.toDatastore();
     }
 
@@ -576,33 +580,33 @@ public class Zoeker {
      * afhankelijk kunnen zijn van elkaar.
      */
     private Filter createFilter(ZoekAttribuut[] zoekVelden, String[] searchStrings, int index, DataStore ds, FilterFactory2 ff, FeatureType ft) throws Exception {
-        String searchString = searchStrings[index];        
+        String searchString = searchStrings[index];
         Integer searchRadius = null;
         String startLocatie = null;
-        
+
         ZoekAttribuut zoekVeld = zoekVelden[index];
         if (zoekVeld.getType() == Attribuut.LOCATIE_GEOM__TYPE) {
             startLocatie = getStartLocationFromSession();
             searchRadius = getSearchRadiusFromSession();
-            
+
             if (startLocatie != null) {
                 searchString = startLocatie;
             }
         }
-        
+
         if (searchString == null || searchString.length() == 0) {
             return null;
         }
-        
+
         Filter filter = null;
         if (zoekVeld.getType() == Attribuut.GEOMETRY_TYPE
                 || zoekVeld.getType() == Attribuut.LOCATIE_GEOM__TYPE) {
-            
+
             WKTReader wktreader = new WKTReader(new GeometryFactory(new PrecisionModel(), 28992));
             try {
                 Geometry geom = wktreader.read(searchString);
                 Double straal = null;
-                
+
                 //zijn er nog zoekAttributen ingevuld die betrekking hebben op de geometry (zoals straal)
                 for (int i = 0; i < zoekVelden.length; i++) {
                     //skip voor dit zoekveld
@@ -612,7 +616,7 @@ public class Zoeker {
                     //bij straal maak een buffer.
                     if (zoekVelden[i].getType() == Attribuut.STRAAL_TYPE && searchStrings[i] != null && searchStrings[i].length() > 0) {
                         try {
-                            straal = Double.parseDouble(searchStrings[i]);                            
+                            straal = Double.parseDouble(searchStrings[i]);
                             geom = geom.buffer(straal);
                         } catch (NumberFormatException nfe) {
                             log.error("Ingevulde zoekopdracht " + zoekVelden[i].getNaam() + "moet een nummer zijn", nfe);
@@ -624,16 +628,16 @@ public class Zoeker {
                 if (straal != null && straal > 0) {
                     filter = ff.within(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(geom));
                 }
-                
-                if (straal == null && searchRadius != null && searchRadius > 0 
+
+                if (straal == null && searchRadius != null && searchRadius > 0
                         && startLocatie != null) {
-                    
+
                     geom = geom.buffer(searchRadius);
                     filter = ff.within(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(geom));
-                    
+
                     log.debug("Using the default search radius of " + searchRadius);
                 }
-                
+
             } catch (Exception e) {
                 log.error("Fout bij parsen wkt geometry", e);
             }
