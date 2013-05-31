@@ -12,8 +12,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import nl.b3p.zoeker.services.ZoekResultaat;
+import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.directwebremoting.annotations.DataTransferObject;
+import org.directwebremoting.hibernate.H3BeanConverter;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,7 +25,7 @@ import org.json.JSONObject;
  *
  * @author Roy
  */
-public class ZoekConfiguratie {
+public class ZoekConfiguratie implements Comparable {
 
     public static final String FLUSH_CACHE_PARAM = "flushresultlistcache";
     /*
@@ -44,21 +47,18 @@ public class ZoekConfiguratie {
     private Bron parentBron = null;
     /**
      * cachedResultMap bevat alle resultaten die de zoekconfiguratie kan hebben.
-     * Het is een Map met de resultaatvelden.
-     * De applicatie bepaalt of de resultaten opgehaald worden of
-     * dat de cachedResultMap wordt gebruikt.
+     * Het is een Map met de resultaatvelden. De applicatie bepaalt of de
+     * resultaten opgehaald worden of dat de cachedResultMap wordt gebruikt.
      */
     private static Map<List<String>, CachedResult> cachedResultMap = new HashMap();
     /**
-     * Als een lijst dynamisch is, dan wordt de lijst bij elke vraag
-     * weer opnieuw opgevraagd. Niet-dynamische lijsten, dus statisch,
-     * worden vooraf gecached. Als een gecachete lijst niet klaar is,
-     * wordt gehandeld alsof er geen lijst is.
+     * Als een lijst dynamisch is, dan wordt de lijst bij elke vraag weer
+     * opnieuw opgevraagd. Niet-dynamische lijsten, dus statisch, worden vooraf
+     * gecached. Als een gecachete lijst niet klaar is, wordt gehandeld alsof er
+     * geen lijst is.
      */
     private boolean resultListDynamic = true;
-    
     private String omschrijving;
-
     private static final Log log = LogFactory.getLog(ZoekConfiguratie.class);
 
     public ZoekConfiguratie() {
@@ -266,7 +266,7 @@ public class ZoekConfiguratie {
         return resultListDynamic;
     }
 
-     /**
+    /**
      * @param resultListDynamic the resultListDynamic to set
      */
     public void setResultListDynamic(boolean resultListDynamic) {
@@ -325,5 +325,35 @@ public class ZoekConfiguratie {
         for (List<String> remKey : remKeys) {
             cachedResultMap.remove(remKey);
         }
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ZoekConfiguratie other = (ZoekConfiguratie) obj;
+        if (this.id != other.id && (this.id == null || !this.id.equals(other.id))) {
+            return false;
+        }
+        return true;
+    }
+
+    public int compareTo(Object o) {
+        ZoekConfiguratie myClass = (ZoekConfiguratie) o;
+
+        return new CompareToBuilder()
+                .append(this.naam, myClass.naam)
+                .toComparison();
+
     }
 }

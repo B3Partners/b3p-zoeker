@@ -520,19 +520,21 @@ public class Zoeker {
         return distance;
     }
 
-    public static List getZoekConfiguraties() {
+    public static List getZoekConfiguraties() {        
         Object identity = null;
         List returnList = null;
+        
         try {
             identity = MyEMFDatabase.createEntityManager(MyEMFDatabase.MAIN_EM);
             EntityManager em = MyEMFDatabase.getEntityManager(MyEMFDatabase.MAIN_EM);
             EntityTransaction tx = em.getTransaction();
             tx.begin();
+            
             try {
                 returnList = em.createQuery("from ZoekConfiguratie z"
                         + " LEFT JOIN FETCH z.zoekVelden"
                         + " LEFT JOIN FETCH z.resultaatVelden"
-                        + " LEFT JOIN FETCH z.parentBron").getResultList();
+                        + " LEFT JOIN FETCH z.parentBron ORDER BY z.naam DESC").getResultList();
 
                 tx.commit();
             } catch (Exception ex) {
@@ -548,7 +550,13 @@ public class Zoeker {
             log.debug("Closing entity manager .....");
             MyEMFDatabase.closeEntityManager(identity, MyEMFDatabase.MAIN_EM);
         }
-        return returnList;
+        
+        /* Eerst set maken om dubbele eruit te halen vanwege left join many to one 
+         * 
+         * TODO: Bij veel records in LEFT table kan snel uit de klauwen lopen. Dit 
+         * resultaat cachen ? */
+        
+        return new ArrayList(new HashSet(returnList));
     }
 
     protected boolean containsResult(List<ZoekResultaat> zoekResultaten, ZoekResultaat p) {
