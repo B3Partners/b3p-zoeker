@@ -303,11 +303,14 @@ public class Zoeker {
                     if (log.isDebugEnabled()) {
                         FeatureType schema = fs.getSchema();
                         for (String prop : properties) {
-                            PropertyDescriptor pd = schema.getDescriptor(prop);
-                            if (pd == null) {
-                                log.debug("The property: '" + prop + "' that is configured "
-                                        + "in the 'zoeker' is not available in the feature: " + zc.getFeatureType());
+                            if (prop != null && schema != null) {
+                                PropertyDescriptor pd = schema.getDescriptor(prop);
+                                if (pd == null) {
+                                    log.debug("The property: '" + prop + "' that is configured "
+                                            + "in the 'zoeker' is not available in the feature: " + zc.getFeatureType());
+                                }
                             }
+
                         }
                     }
 
@@ -315,9 +318,13 @@ public class Zoeker {
 
                     /* Pagination for FeatureCollection */
                     final FeatureSource fs2 = fs;
-                    int count = fs2.getCount(query);
 
-                    if (count < limit) {
+                    Integer count = null;
+                    if (!(ds instanceof WFS_1_0_0_DataStore)) {
+                        count = fs2.getCount(query);
+                    }
+
+                    if (count != null && count < limit) {
                         limit = count;
                     }
 
@@ -330,8 +337,10 @@ public class Zoeker {
 
                     //Haal de featureCollection met de query op.
                     fc = fs.getFeatures(query);
+                    
                     //Maak de FeatureIterator aan (hier wordt het daad werkelijke verzoek gedaan.
                     fi = fc.features();
+                    
                     //doorloop de features en maak de resultaten.
                     while (fi.hasNext()) {
                         Feature f = fi.next();
@@ -520,16 +529,16 @@ public class Zoeker {
         return distance;
     }
 
-    public static List getZoekConfiguraties() {        
+    public static List getZoekConfiguraties() {
         Object identity = null;
         List returnList = null;
-        
+
         try {
             identity = MyEMFDatabase.createEntityManager(MyEMFDatabase.MAIN_EM);
             EntityManager em = MyEMFDatabase.getEntityManager(MyEMFDatabase.MAIN_EM);
             EntityTransaction tx = em.getTransaction();
             tx.begin();
-            
+
             try {
                 returnList = em.createQuery("from ZoekConfiguratie z"
                         + " LEFT JOIN FETCH z.zoekVelden"
@@ -550,12 +559,12 @@ public class Zoeker {
             log.debug("Closing entity manager .....");
             MyEMFDatabase.closeEntityManager(identity, MyEMFDatabase.MAIN_EM);
         }
-        
+
         /* Eerst set maken om dubbele eruit te halen vanwege left join many to one 
          * 
          * TODO: Bij veel records in LEFT table kan snel uit de klauwen lopen. Dit 
          * resultaat cachen ? */
-        
+
         return new ArrayList(new HashSet(returnList));
     }
 
@@ -666,7 +675,7 @@ public class Zoeker {
                 Filter f = null;
                 String sString = orStrings[i];
                 if (ds instanceof WFS_1_0_0_DataStore) {
-                    if (propertyIsNumber(ft.getDescriptor(zoekVeld.getAttribuutnaam()))) {
+                    if (ft != null && zoekVeld != null && propertyIsNumber(ft.getDescriptor(zoekVeld.getAttribuutnaam()))) {
                         f = ff.equals(ff.property(zoekVeld.getAttribuutnaam()), ff.literal(sString));
                     } else {
                         f = ff.like(ff.property(zoekVeld.getAttribuutnaam()), sString);
