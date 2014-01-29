@@ -413,7 +413,7 @@ public class Zoeker {
                     log.error("Fout tijdens het zoeken met een configuratie: ", e);
                 } finally {
                     if (fc != null && fi != null) {
-                        fc.close(fi);
+                        fi.close();
                     }
 
                     if (ds != null) {
