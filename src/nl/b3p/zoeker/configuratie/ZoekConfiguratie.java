@@ -59,6 +59,13 @@ public class ZoekConfiguratie implements Comparable {
      */
     private boolean resultListDynamic = true;
     private String omschrijving;
+    
+    private String forUsageIn;
+    
+    public static final String USE_IN_VIEWER_WEBR = "viewer_webr";
+    public static final String USE_IN_VIEWER = "viewer";
+    public static final String USE_IN_WEBR = "webr";
+    
     private static final Log log = LogFactory.getLog(ZoekConfiguratie.class);
 
     public ZoekConfiguratie() {
@@ -240,6 +247,11 @@ public class ZoekConfiguratie implements Comparable {
         if (getBron() != null) {
             json.put("bron", getParentBron().toJSON());
         }
+        
+        if (getForUsageIn() != null) {
+            json.put("forUsageIn", getForUsageIn());
+        }
+        
         return json;
 
     }
@@ -285,6 +297,14 @@ public class ZoekConfiguratie implements Comparable {
 
     public void setOmschrijving(String omschrijving) {
         this.omschrijving = omschrijving;
+    }
+
+    public String getForUsageIn() {
+        return forUsageIn;
+    }
+
+    public void setForUsageIn(String forUsageIn) {
+        this.forUsageIn = forUsageIn;
     }
 
     public static synchronized void setCachedResultList(ZoekConfiguratie zc,

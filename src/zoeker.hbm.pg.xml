@@ -58,5 +58,9 @@
         <many-to-one class="nl.b3p.zoeker.configuratie.Bron" column="parentbron" name="parentBron" lazy="false"/>
         <many-to-one class="nl.b3p.zoeker.configuratie.ZoekConfiguratie" column="parentzoekconfiguratie" name="parentZoekConfiguratie" lazy="false"/>
         <property name="omschrijving"/>
+        
+        <property name="forUsageIn" type="string">
+            <column name="for_usage_in" default="viewer_webr" />
+        </property>
     </class>
 </hibernate-mapping>
