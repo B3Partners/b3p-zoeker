@@ -220,6 +220,7 @@ public class Bron {
             if (schema != null) {
                 params.put(OracleNGDataStoreFactory.SCHEMA.key, schema);
             }
+            params.put(OracleNGDataStoreFactory.FETCHSIZE.key, 50);
             params.put(OracleNGDataStoreFactory.DATABASE.key, instance);
             params.put(OracleNGDataStoreFactory.USER.key, this.getGebruikersnaam());
             params.put(OracleNGDataStoreFactory.PASSWD.key, this.getWachtwoord());
@@ -247,6 +248,7 @@ public class Bron {
                     database = tokens[0];
                 }
             }
+            params.put(PostgisNGDataStoreFactory.FETCHSIZE.key, 50);
             params.put(PostgisNGDataStoreFactory.DBTYPE.key, "postgis");
             params.put(PostgisNGDataStoreFactory.HOST.key, host);
             params.put(PostgisNGDataStoreFactory.PORT.key, port);
