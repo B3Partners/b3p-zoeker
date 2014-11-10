@@ -343,7 +343,13 @@ public class Zoeker {
                     
                     //doorloop de features en maak de resultaten.
                     while (fi.hasNext()) {
-                        Feature f = fi.next();
+                        Feature f = null;
+                        try {
+                            f = fi.next();
+                        } catch (Exception e) {
+                            log.error("Error getting next feature, probably Oracle stumbling over null geometry: " + e.getLocalizedMessage());
+                            continue;
+                        }
                         ZoekResultaat p = new ZoekResultaat();
                         Iterator rit = zc.getResultaatVelden().iterator();
                         while (rit.hasNext()) {
