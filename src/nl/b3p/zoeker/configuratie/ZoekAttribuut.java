@@ -139,7 +139,7 @@ public class ZoekAttribuut extends Attribuut {
 
     public static void main(String[] args) throws IOException, Exception {
 //        Bron b = new Bron(0, "buurten", "http://x5.b3p.nl/cgi-bin/mapserv_fwtools?map=/srv/maps/kaartenbalie.map&", null, null, 0);
-        Bron b = new Bron(0, "buurten", "jdbc:postgresql://x5.b3p.nl:5432/demo_kaartenbalie", "postgres", "***REMOVED***", 0);
+        Bron b = new Bron(0, "buurten", "jdbc:postgresql://x5.b3p.nl:5432/demo_kaartenbalie", "postgres", "xxxxxx", 0);
         DataStore ds = b.toDatastore();
 
         String featureTypeName = "buurt_2006_cbs";
