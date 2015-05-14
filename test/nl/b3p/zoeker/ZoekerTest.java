@@ -130,7 +130,7 @@ public class ZoekerTest{
 
     @Test
     public void searchWithStringPostgis(){
-        Bron bron = new Bron(1,"cbs","jdbc:postgresql://b3p-demoserver:5432/demo_kaartenbalie","postgres","***REMOVED***",null);
+        Bron bron = new Bron(1,"cbs","jdbc:postgresql://b3p-demoserver:5432/demo_kaartenbalie","postgres","xxxxxxx",null);
         ZoekConfiguratie zc = new ZoekConfiguratie(null,"Buurten op geom","buurt_2006_cbs",bron,null);
 
         ZoekAttribuut za = new ZoekAttribuut(null,"op geometry","the_geom", "the_geom",3,null,null);
