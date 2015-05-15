@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping SYSTEM
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="nl.b3p.zoeker.configuratie.Bron" table="plannenbank_bron">
+        <id name="id">
+            <column name="id" not-null="true"/>
+            <generator class="sequence">
+                <param name="sequence">bron_id_seq</param>
+            </generator>
+        </id>
+        <property name="naam"/>
+        <property name="url"/>
+        <property name="gebruikersnaam"/>
+        <property name="wachtwoord"/>
+        <property name="volgorde"/>
+    </class>
+    <class name="nl.b3p.zoeker.configuratie.ZoekAttribuut" table="plannenbank_zoekveld">
+        <id name="id">
+            <column name="id" not-null="true"/>
+            <generator class="sequence">
+                <param name="sequence">zoekveld_id_seq</param>
+            </generator>
+        </id>
+        <property name="naam"/>
+        <property name="label"/>
+        <property name="attribuutnaam"/>
+        <property name="type" column="typen"/>
+        <property name="volgorde"/>
+        <many-to-one class="nl.b3p.zoeker.configuratie.ZoekConfiguratie" name="zoekConfiguratie" column="zoekconfiguratie" lazy="false"/>
+    </class>
+    <class name="nl.b3p.zoeker.configuratie.ResultaatAttribuut" table="plannenbank_resultaatveld">
+        <id name="id">
+            <column name="id" not-null="true"/>
+            <generator class="sequence">
+                <param name="sequence">resultaatveld_id_seq</param>
+            </generator>
+        </id>
+        <property name="naam"/>
+        <property name="label"/>
+        <property name="volgorde"/>
+        <property name="attribuutnaam"/>
+        <property name="type" column="typen"/>
+        <many-to-one class="nl.b3p.zoeker.configuratie.ZoekConfiguratie" name="zoekConfiguratie" column="zoekconfiguratie" lazy="false"/>
+    </class>
+    <class name="nl.b3p.zoeker.configuratie.ZoekConfiguratie" table="plannenbank_zoekconfiguratie">
+        <id name="id">
+            <column name="id" not-null="true"/>
+            <generator class="sequence">
+                <param name="sequence">zoekconfiguratie_id_seq</param>
+            </generator>
+        </id>
+        <property name="naam"/>
+        <property column="featuretype" name="featureType"/>
+        <set name="zoekVelden" lazy="false" cascade="all-delete-orphan" order-by="volgorde">
+            <key column="zoekconfiguratie"/>
+            <one-to-many class="nl.b3p.zoeker.configuratie.ZoekAttribuut"/>
+        </set>
+        <set name="resultaatVelden" lazy="false" cascade="all-delete-orphan" order-by="volgorde">
+            <key column="zoekconfiguratie"/>
+            <one-to-many class="nl.b3p.zoeker.configuratie.ResultaatAttribuut"/>
+        </set>
+        <many-to-one class="nl.b3p.zoeker.configuratie.Bron" column="parentbron" lazy="false" name="parentBron"/>
+        <many-to-one class="nl.b3p.zoeker.configuratie.ZoekConfiguratie" column="parentzoekconfiguratie" lazy="false" name="parentZoekConfiguratie"/>
+    </class>
+</hibernate-mapping>
