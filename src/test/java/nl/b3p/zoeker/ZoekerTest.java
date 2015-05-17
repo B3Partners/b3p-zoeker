@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import junit.framework.TestCase;
 import nl.b3p.zoeker.configuratie.Attribuut;
 import org.geotools.util.logging.Logging;
 import nl.b3p.zoeker.configuratie.Bron;

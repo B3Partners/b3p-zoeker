@@ -15,8 +15,6 @@ import nl.b3p.zoeker.services.ZoekResultaat;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.directwebremoting.annotations.DataTransferObject;
-import org.directwebremoting.hibernate.H3BeanConverter;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
