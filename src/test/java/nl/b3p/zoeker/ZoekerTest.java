@@ -53,6 +53,7 @@ public class ZoekerTest{
 
     @Before
     public void setUp() throws Exception {
+        /*
         Class c = ZoekerTest.class;
         URL log4j_url = c.getResource("log4j.properties");
         if (log4j_url == null) {
@@ -62,7 +63,7 @@ public class ZoekerTest{
         Properties p = new Properties();
         p.load(log4j_url.openStream());
         PropertyConfigurator.configure(p);
-
+        */
         //logger for geotools
         try {
             logging.setLoggerFactory("org.geotools.util.logging.Log4JLoggerFactory");
