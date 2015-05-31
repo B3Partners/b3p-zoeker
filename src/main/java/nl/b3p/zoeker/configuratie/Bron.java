@@ -5,11 +5,8 @@
 package nl.b3p.zoeker.configuratie;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -19,12 +16,9 @@ import org.geotools.data.oracle.OracleNGDataStoreFactory;
 import org.geotools.data.postgis.PostgisNGDataStoreFactory;
 import org.geotools.data.wfs.WFSDataStore;
 import org.geotools.data.wfs.WFSDataStoreFactory;
-import org.geotools.data.wfs.v1_0_0.FeatureSetDescription;
 import org.geotools.data.wfs.v1_0_0.WFSCapabilities;
 import org.geotools.data.wfs.v1_0_0.WFS_1_0_0_DataStore;
 import org.geotools.filter.FilterCapabilities;
-import org.geotools.xml.SchemaFactory;
-import org.geotools.xml.schema.Schema;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -275,9 +269,8 @@ public class Bron {
                 } else {
                     url += "&request=GetCapabilities&service=WFS";
                 }
-                 //temp hack: default use version 1.0.0
                 if (url.toLowerCase().indexOf("version") == -1) {
-                    url += "&Version=1.0.0";
+                    url += "&Version=1.1.0";
                 }
             }
             params.put(WFSDataStoreFactory.URL.key, url);
@@ -287,6 +280,14 @@ public class Bron {
             }
             params.put(WFSDataStoreFactory.TIMEOUT.key, TIMEOUT);
             params.put(WFSDataStoreFactory.PROTOCOL.key, Boolean.TRUE);
+            
+            //Geotools zoekt Geoserver automatisch obv "geoserver" in url.
+            //Daarnaast worden ionic, arcgis en cubewerx gevonden.
+            //Mapserver moeten we dus zelf uitzoeken.
+            if (url.contains("mapserv") && url.contains(".map")) {
+                // als mapserver dus verborgen zit achter een algemene url, jammer!
+                params.put(WFSDataStoreFactory.WFS_STRATEGY.key, "mapserver");
+            }
 
             DataStore ds = getWfsCache(params);
 
@@ -368,34 +369,31 @@ public class Bron {
             WFSCapabilities wfscap = wfs100ds.getCapabilities();
             // wfs 1.0.0 haalt prefix er niet af en zet de namespace niet
             // wfs 1.1.0 doet dit wel en hier fixen we dit.
-            List<FeatureSetDescription> fdsl = wfscap.getFeatureTypes();
-            for (FeatureSetDescription fds : fdsl) {
-                if (fds.getNamespace() != null) {
-                    continue;
-                }
-
-                String localName = fds.getName();
-                String nsPrefix = "";
-                String[] lna = fds.getName().split(":");
-                if (lna.length > 1) {
-                    localName = lna[1];
-                    nsPrefix = lna[0];
-                }
-                Schema[] schemas = SchemaFactory.getSchemas(nsPrefix);
-                URI nsUri = null;
-                if (schemas.length > 0) {
-                    nsUri = schemas[0].getTargetNamespace();
-                } else {
-                    try {
-                        nsUri = new URI("http://www.kaartenbalie.nl/unknown");
-                    } catch (URISyntaxException ex) {
-                        // ignore
-                    }
-                }
-                fds.setName(localName);
-                fds.setNamespace(nsUri);
-
-            }
+//            List<FeatureSetDescription> fdsl = wfscap.getFeatureTypes();
+//            for (FeatureSetDescription fds : fdsl) {
+//                if (fds.getNamespace() != null) {
+//                    continue;
+//                }
+//
+//                String[] lna = fds.getName().split(":");
+//                if (lna.length > 1) {
+//                    String localName = lna[1];
+//                    String nsPrefix = lna[0];
+//                    URI nsUri = null;
+//                    if (!nsPrefix.isEmpty()) {
+//                        Schema[] schemas = SchemaFactory.getSchemas(nsPrefix);
+//                        if (schemas.length > 0) {
+//                            nsUri = schemas[0].getTargetNamespace();
+//                        } else {
+//                            try {
+//                                nsUri = new URI(nsPrefix);
+//                            } catch (URISyntaxException ex) {}
+//                        }
+//                    }
+//                    fds.setName(localName);
+//                    fds.setNamespace(nsUri);
+//                }
+//            }
 
             //omdat de WFS_1_0_0_Datastore niet met de opengis filters werkt even toevoegen dat
             //er simpele vergelijkingen kunnen worden gedaan. (de meeste servers kunnen dit natuurlijk);
