@@ -735,6 +735,7 @@ public class Zoeker {
 
                         ZoekResultaatAttribuut zra = new ZoekResultaatAttribuut(raToon);
                         zra.setType(Attribuut.ALLEEN_TOON_TYPE);
+                        zra.setLabel("xy");
                         String waarde = "Zoom naar (" + coords[0] + " " + coords[1] + ")";
                         zra.setWaarde(waarde);
 
