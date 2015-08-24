@@ -185,7 +185,8 @@ public class ZoekResultaat implements Comparable {
         if (getAttributen() != null) {
             for (int i = 0; i < getAttributen().size(); i++) {
                 ZoekResultaatAttribuut a = (ZoekResultaatAttribuut) getAttributen().get(i);
-                if ( (a.getType() != null && a.getType() == type) || (type == 120 &&a.getLabel().equalsIgnoreCase("afstand")) ) {
+                if ( (a.getType() != null && a.getType() == type) 
+                        || (type == 120 && a.getLabel()!=null && a.getLabel().equalsIgnoreCase("afstand")) ) {
                     returnValue.add(a.getWaarde());
                 }
             }
