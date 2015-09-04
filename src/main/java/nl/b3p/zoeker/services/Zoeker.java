@@ -74,7 +74,7 @@ public class Zoeker {
                     }
                     queryString += zoekConfiguratieIds[i];
                 }
-                queryString += ") order by z.parentBron.volgorde";
+                queryString += ") order by z.naam";
                 List zoekconfiguraties = em.createQuery(queryString).getResultList();
                 for (int i = 0; i < zoekconfiguraties.size(); i++) {
                     ZoekConfiguratie zc = (ZoekConfiguratie) zoekconfiguraties.get(i);

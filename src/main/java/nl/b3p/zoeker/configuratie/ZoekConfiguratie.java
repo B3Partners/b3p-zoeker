@@ -243,7 +243,7 @@ public class ZoekConfiguratie implements Comparable {
             json.put("parentZoekConfiguratieId", getParentZoekConfiguratie().getId());
         }
         if (getBron() != null) {
-            json.put("bron", getParentBron().toJSON());
+            json.put("bron", getBron().toJSON());
         }
         
         if (getForUsageIn() != null) {
