@@ -117,7 +117,7 @@
         <connection>scm:git:git@github.com:B3Partners/b3p-zoeker.git</connection>
         <developerConnection>scm:git:git@github.com:B3Partners/b3p-zoeker.git</developerConnection>
         <url>https://github.com/B3Partners/b3p-zoeker</url>
-      <tag>b3p-zoeker-4.2.1</tag>
+      <tag>b3p-zoeker-${project.version}</tag>
     </scm>
     <distributionManagement>
         <repository>
