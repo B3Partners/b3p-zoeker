@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>nl.b3p</groupId>
     <artifactId>b3p-zoeker</artifactId>
-    <version>4.2.2</version>
+    <version>4.2.3-SNAPSHOT</version>
     <packaging>jar</packaging>
     
     <properties>
@@ -117,7 +117,7 @@
         <connection>scm:git:git@github.com:B3Partners/b3p-zoeker.git</connection>
         <developerConnection>scm:git:git@github.com:B3Partners/b3p-zoeker.git</developerConnection>
         <url>https://github.com/B3Partners/b3p-zoeker</url>
-      <tag>b3p-zoeker-4.2.2</tag>
+      <tag>b3p-zoeker-${project.version}</tag>
     </scm>
     <distributionManagement>
         <repository>
