@@ -33,7 +33,7 @@
             <version>${geotools.version}</version>
             <exclusions>
                 <exclusion>
-                    <groupId>postgresql</groupId>
+                    <groupId>org.postgresql</groupId>
                     <artifactId>postgresql</artifactId>
                 </exclusion>
             </exclusions>
